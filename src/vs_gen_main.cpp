@@ -18,10 +18,10 @@
 #include <chrono>
 #include <string>
 #include <vector>
-#include <array>
+//#include <array>
 #include <algorithm>
-#include <type_traits>
-#include <list>
+//#include <type_traits>
+//#include <list>
 #include <set>
 
 // OpenCV includes
@@ -35,8 +35,8 @@
 #include <cv_create_gaussian_kernel.h>
 #include <cv_dft_conv.h>
 //#include <blur_params.h>
-#include <num2string.h>
-#include <file_ops.h>
+//#include <num2string.h>
+//#include <file_ops.h>
 
 #include <vs_gen.h>
 #include <vs_gen_lib.h>
@@ -68,12 +68,14 @@ void init(/*params*/
     double fg_prob_,
     double bg_prob_,
     uint16_t fg_dm_value_,
-    uint16_t bg_dm_value_
+    uint16_t bg_dm_value_,
+    int32_t max_dm_vals_per_image_
 )
 {
 
     vs.init(sig_tbl_num, sigma_table_t, blur_tbl_num, dm_values_t, br1_table_t, br2_table_t, bg_tbl_num, bg_tbl_t, fg_tbl_num,
-        fg_tbl_t, fg_prob_, bg_prob_, fg_dm_value_, bg_dm_value_);
+        fg_tbl_t, fg_prob_, bg_prob_, fg_dm_value_, bg_dm_value_, max_dm_vals_per_image_
+    );
 
 }   // end of init
 
@@ -83,7 +85,7 @@ void generate_scene(unsigned int img_w,
     unsigned int img_h, 
     unsigned char* img_f1_t, 
     unsigned char* img_f2_t, 
-    unsigned short* dm_t
+    unsigned char* dm_t
 )
 {
     uint32_t idx, N;
@@ -101,7 +103,7 @@ void generate_scene(unsigned int img_w,
     // assigned the input pointers to cv:Mat containers
     cv::Mat img_f1 = cv::Mat(img_h, img_w, CV_8UC3, img_f1_t);
     cv::Mat img_f2 = cv::Mat(img_h, img_w, CV_8UC3, img_f2_t);
-    cv::Mat dm = cv::Mat(img_h, img_w, CV_16UC1, dm_t);
+    cv::Mat dm = cv::Mat(img_h, img_w, CV_8UC1, dm_t);
     cv::Size img_size(img_h, img_w);
 
     // generate random dm_values that include the foreground and background values
@@ -186,7 +188,7 @@ void generate_scene(unsigned int img_w,
     cv::filter2D(img_f2, img_f2, -1, vs.blur_kernels[tmp_br2_table[0]], cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
 
     // create the initial depth map
-    cv::Mat depth_map(img_h, img_w, CV_8UC1, cv::Scalar::all(dm_vals[0]));
+    dm = cv::Mat(img_h, img_w, CV_8UC1, cv::Scalar::all(dm_vals[0]));
 
     // blur imgs using dm_values and random masks
     for (idx = 1; idx < dm_vals.size(); ++idx)
@@ -231,7 +233,7 @@ void generate_scene(unsigned int img_w,
         overlay_image(f2_layer, output_img, mask);
 
         // overlay depthmap
-        overlay_depthmap(depth_map, mask, dm_vals[idx]);
+        overlay_depthmap(dm, mask, dm_vals[idx]);
 
         // blur f1
         blur_layer(f1_layer, img_f1, mask, vs.blur_kernels[tmp_br1_table[idx]], vs.rng);
@@ -239,6 +241,10 @@ void generate_scene(unsigned int img_w,
         // blur f2
         blur_layer(f2_layer, img_f2, mask, vs.blur_kernels[tmp_br2_table[idx]], vs.rng);
     }
+
+    img_f1_t = img_f1.data;
+    img_f2_t = img_f2.data;
+    dm_t = dm.data;
 
 }   // end of generate_scene
 

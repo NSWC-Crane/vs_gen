@@ -6,11 +6,12 @@
     #ifdef LIB_EXPORTS
         #define VS_GEN_LIB __declspec(dllexport)
     #else
-        #define VS_GEN_LIB __declspec(dllimport)
+        #define VS_GEN_LIB 
+//__declspec(dllimport)
     #endif
 
 #else
-    #define MS_TRACKER_LIB
+    #define VS_GEN_LIB
 
 #endif
 
@@ -19,8 +20,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-    VS_GEN_LIB void init(/*params*/
-        uint32_t sig_tbl_num,
+    VS_GEN_LIB void init(uint32_t sig_tbl_num,
         double* sigma_table_t,
         uint32_t blur_tbl_num,
         uint8_t* dm_values_t,
@@ -33,7 +33,8 @@ extern "C" {
         double fg_prob_,
         double bg_prob_,
         uint16_t fg_dm_value_,
-        uint16_t bg_dm_value_
+        uint16_t bg_dm_value_,
+        int32_t max_dm_vals_per_image_
     );
 #ifdef __cplusplus
 }
@@ -47,7 +48,7 @@ extern "C" {
         unsigned int img_h, 
         unsigned char* img_f1_t, 
         unsigned char* img_f2_t, 
-        unsigned short* dm_t
+        unsigned char* dm_t
     );
 #ifdef __cplusplus
 }

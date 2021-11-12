@@ -11,10 +11,10 @@
 #include <chrono>
 #include <string>
 #include <vector>
-#include <array>
+//#include <array>
 #include <algorithm>
-#include <type_traits>
-#include <list>
+//#include <type_traits>
+//#include <list>
 #include <set>
 
 // OpenCV includes
@@ -99,7 +99,8 @@ public:
         double fg_prob_,
         double bg_prob_,
         uint16_t fg_dm_value_,
-        uint16_t bg_dm_value_
+        uint16_t bg_dm_value_,
+        int32_t max_dm_vals_per_image_
         ) 
     {
 
@@ -109,6 +110,7 @@ public:
         bg_prob = bg_prob_;
         fg_dm_value = fg_dm_value_;
         bg_dm_value = bg_dm_value_;
+        max_dm_vals_per_image = max_dm_vals_per_image_;
 
         // copy the pointer data into the sigma table vector
         sigma_table.insert(sigma_table.end(), &sigma_table_t[0], &sigma_table_t[sig_tbl_num]);
