@@ -35,50 +35,106 @@ public:
 
     cv::RNG rng;
 
-    std::vector<uint16_t> dm_values;
-    std::vector<uint16_t> dm_indexes;
-    int32_t min_N, max_N;
+    //std::vector<uint16_t> dm_values;
+    //std::vector<uint16_t> dm_indexes;
+    //int32_t min_N, max_N;
 
     double scale = 0.1;
     uint32_t BN = 1000;
 
-    std::pair<uint16_t, double> bg_dm;
-    std::pair<uint16_t, double> fg_dm;
-    std::vector<std::pair<uint8_t, uint8_t>> bg_br_table;
-    std::vector<std::pair<uint8_t, uint8_t>> fg_br_table;
-    double prob_bg = 0.31;      // set the probablility of selecting the background depthmap value
-    double prob_fg = 0.35;      // set the probability of selecting the foreground depthmap value
-    uint16_t min_dm_value;      // = fg_dm.first;        // depthmap_values.front();
-    uint16_t max_dm_value;      // = bg_dm.first;        // depthmap_values.back();
+    //std::pair<uint16_t, double> bg_dm;
+    //std::pair<uint16_t, double> fg_dm;
+
+    double fg_prob = 0.35;      // the probability of selecting the foreground depthmap value (0.35)
+    double bg_prob = 0.31;      // the probablility of selecting the background depthmap value (0.31)
+    uint16_t fg_dm_value;      // = fg_dm.first;        // foreground depthmap value; it is assumed that this value is the smallest depthmap value in the set
+    uint16_t bg_dm_value;      // = bg_dm.first;        // background depthmap value; it is assumed that this value is the largest depthmap value in the set
 
     std::vector<cv::Mat> blur_kernels;
     //std::vector<cv::Mat> fft_blur_kernels;
 
-    std::vector<uint8_t> depthmap_values;
     std::vector<double> sigma_table;
+    std::vector<uint8_t> dm_values;
     std::vector<uint8_t> br1_table;
     std::vector<uint8_t> br2_table;
-    uint8_t dataset_type = 0;
+    std::vector<std::pair<uint8_t, uint8_t>> bg_br_table;
+    std::vector<std::pair<uint8_t, uint8_t>> fg_br_table;
 
     int32_t max_dm_vals_per_image;
 
 
-    vs_gen()
+    vs_gen() = default;
+
+    //vs_gen(
+    //    std::vector<double> st_,
+    //    std::vector<uint8_t> dm_values_,
+    //    std::vector<uint8_t> br1_table_,
+    //    std::vector<uint8_t> br2_table_,
+    //    std::vector<std::pair<uint8_t, uint8_t>> bg_br_table_,
+    //    std::vector<std::pair<uint8_t, uint8_t>> fg_br_table_,
+    //    double fg_prob_,
+    //    double bg_prob_,
+    //    uint16_t fg_dm_value_,
+    //    uint16_t bg_dm_value_
+    //) : sigma_table(st_), dm_values(dm_values_), br1_table(br1_table_), br2_table(br2_table_), 
+    //    bg_br_table(bg_br_table_), fg_br_table(fg_br_table_), fg_prob(fg_prob_), bg_prob(bg_prob_), 
+    //    fg_dm_value(fg_dm_value_), bg_dm_value(bg_dm_value_)
+    //{
+    //    rng = cv::RNG(time(NULL));
+
+    //    generate_blur_kernels();
+    //}
+
+    //-----------------------------------------------------------------------------
+    inline void init(uint32_t sig_tbl_num,
+        double* sigma_table_t,
+        uint32_t blur_tbl_num,
+        uint8_t* dm_values_t,
+        uint8_t* br1_table_t,
+        uint8_t* br2_table_t,
+        uint32_t bg_tbl_num,
+        void* bg_tbl_t,
+        uint32_t fg_tbl_num,
+        void* fg_tbl_t,
+        double fg_prob_,
+        double bg_prob_,
+        uint16_t fg_dm_value_,
+        uint16_t bg_dm_value_
+        ) 
     {
+
         rng = cv::RNG(time(NULL));
 
+        fg_prob = fg_prob_;
+        bg_prob = bg_prob_;
+        fg_dm_value = fg_dm_value_;
+        bg_dm_value = bg_dm_value_;
 
+        // copy the pointer data into the sigma table vector
+        sigma_table.insert(sigma_table.end(), &sigma_table_t[0], &sigma_table_t[sig_tbl_num]);
 
+        // copy the pointer data into the depthmap values
+        dm_values.insert(dm_values.end(), &dm_values_t[0], &dm_values_t[blur_tbl_num]);
 
+        // copy the pointer data into the blur rate tables
+        br1_table.insert(br1_table.end(), &br1_table_t[0], &br1_table_t[blur_tbl_num]);
+        br2_table.insert(br2_table.end(), &br2_table_t[0], &br2_table_t[blur_tbl_num]);
 
+        auto bg = (std::pair<uint8_t, uint8_t>*)bg_tbl_t;
+        auto fg = (std::pair<uint8_t, uint8_t>*)fg_tbl_t;
 
+        bg_br_table.insert(bg_br_table.end(), &bg[0], &bg[bg_tbl_num]);
+        fg_br_table.insert(fg_br_table.end(), &fg[0], &fg[fg_tbl_num]);
 
-
-
+        // precalculate the blur kernels
         generate_blur_kernels();
 
     }
 
+    //vs_gen(vs_gen v_)
+    //{
+
+    //}
 
 
     ~vs_gen() 
@@ -86,18 +142,21 @@ public:
 
     }
 
+//-----------------------------------------------------------------------------
 private:
 
     // gaussian kernel size
     const uint32_t kernel_size = 69;
     //const uint32_t kernel_size = 512;
 
+    //-----------------------------------------------------------------------------
+    // this function precomputes the blur kernels based on the input sigma table and the kerrnel size
     void generate_blur_kernels(void)
     {    
         uint32_t idx;
         cv::Mat kernel;
 
-        // get the max value of blur radius
+        // get the max value of blur radius - assume that the sigma table is 0 index based
         uint8_t max_br_value = *std::max_element(br1_table.begin(), br1_table.end());
         max_br_value = std::max(max_br_value, *std::max_element(br2_table.begin(), br2_table.end()));
         auto p1 = *std::max_element(bg_br_table.begin(), bg_br_table.end(), compare);

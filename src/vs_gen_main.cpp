@@ -39,48 +39,69 @@
 #include <file_ops.h>
 
 #include <vs_gen.h>
-
-//template<typename T>
-//bool comp_pair(T fisrt, T second)
-//{
-//    return first < second;
-//}
-
+#include <vs_gen_lib.h>
 
 //-----------------------------------------------------------------------------
 // global library internal state variables
 vs_gen vs;
 
 
+////-----------------------------------------------------------------------------
+//void init_from_file(std::string filename)
+//{
+//
+//
+//}
+
 //-----------------------------------------------------------------------------
-void init_from_file(std::string filename)
+void init(/*params*/
+    uint32_t sig_tbl_num,
+    double* sigma_table_t,
+    uint32_t blur_tbl_num,
+    uint8_t* dm_values_t,
+    uint8_t* br1_table_t,
+    uint8_t* br2_table_t,
+    uint32_t bg_tbl_num,
+    void* bg_tbl_t,
+    uint32_t fg_tbl_num,
+    void* fg_tbl_t,
+    double fg_prob_,
+    double bg_prob_,
+    uint16_t fg_dm_value_,
+    uint16_t bg_dm_value_
+)
 {
 
+    vs.init(sig_tbl_num, sigma_table_t, blur_tbl_num, dm_values_t, br1_table_t, br2_table_t, bg_tbl_num, bg_tbl_t, fg_tbl_num,
+        fg_tbl_t, fg_prob_, bg_prob_, fg_dm_value_, bg_dm_value_);
 
-}
-
-//-----------------------------------------------------------------------------
-void init(/*params*/)
-{
-
-}
+}   // end of init
 
 
 //-----------------------------------------------------------------------------
-void generate_scene(unsigned int img_w, unsigned int img_h, unsigned char* img_ptr_f1, unsigned char* img_ptr_f2, unsigned short* dm_ptr)
+void generate_scene(unsigned int img_w, 
+    unsigned int img_h, 
+    unsigned char* img_f1_t, 
+    unsigned char* img_f2_t, 
+    unsigned short* dm_t
+)
 {
     uint32_t idx, N;
     int32_t min_N, max_N;
+    uint8_t dataset_type = 0;
+
     std::vector<uint8_t> tmp_br1_table, tmp_br2_table;
-    std::vector<uint16_t> dm_values;
+    std::vector<uint16_t> dm_vals;
+    std::vector<uint16_t> dm_indexes;
+
     cv::Mat random_img, output_img, mask;
     cv::Mat f1_layer, f2_layer;
     double scale2;
 
     // assigned the input pointers to cv:Mat containers
-    cv::Mat img_f1 = cv::Mat(img_h, img_w, CV_8UC3, img_ptr_f1);
-    cv::Mat img_f2 = cv::Mat(img_h, img_w, CV_8UC3, img_ptr_f2);
-    cv::Mat dm = cv::Mat(img_h, img_w, CV_16UC1, dm_ptr);
+    cv::Mat img_f1 = cv::Mat(img_h, img_w, CV_8UC3, img_f1_t);
+    cv::Mat img_f2 = cv::Mat(img_h, img_w, CV_8UC3, img_f2_t);
+    cv::Mat dm = cv::Mat(img_h, img_w, CV_16UC1, dm_t);
     cv::Size img_size(img_h, img_w);
 
     // generate random dm_values that include the foreground and background values
@@ -92,45 +113,45 @@ void generate_scene(unsigned int img_w, unsigned int img_h, unsigned char* img_p
     // get the probability that the foreground depthmap value will be used
     double fg_x = vs.rng.uniform(0.0, 1.0);
 
-    if (bg_x < vs.prob_bg)
+    if (bg_x < vs.bg_prob)
         tmp_dm_num--;
 
-    if (fg_x < vs.prob_fg)
+    if (fg_x < vs.fg_prob)
         tmp_dm_num--;
 
     //generate_depthmap_set(min_dm_value, max_dm_value, tmp_dm_num, depthmap_values, dm_values, rng);
-    generate_depthmap_index_set(vs.min_dm_value, vs.max_dm_value, tmp_dm_num, vs.depthmap_values, vs.dm_indexes, vs.rng);
+    generate_depthmap_index_set(vs.fg_dm_value, vs.bg_dm_value, tmp_dm_num, vs.dm_values, dm_indexes, vs.rng);
 
     // check the background probability and fill in the tables
-    if (bg_x < vs.prob_bg)
+    if (bg_x < vs.bg_prob)
     {
         uint16_t dm = vs.rng.uniform(0, vs.bg_br_table.size());
         tmp_br1_table.push_back(vs.bg_br_table[dm].first);
         tmp_br2_table.push_back(vs.bg_br_table[dm].second);
 
-        dm_values.push_back(vs.bg_dm.first);
+        dm_vals.push_back(vs.bg_dm_value);
     }
 
     // fill in the tables for the region of interest depthmap values
-    for (idx = 0; idx < vs.dm_indexes.size(); ++idx)
+    for (idx = 0; idx < dm_indexes.size(); ++idx)
     {
-        tmp_br1_table.push_back(vs.br1_table[vs.dm_indexes[idx]]);
-        tmp_br2_table.push_back(vs.br2_table[vs.dm_indexes[idx]]);
-        dm_values.push_back(vs.depthmap_values[vs.dm_indexes[idx]]);
+        tmp_br1_table.push_back(vs.br1_table[dm_indexes[idx]]);
+        tmp_br2_table.push_back(vs.br2_table[dm_indexes[idx]]);
+        dm_vals.push_back(vs.dm_values[dm_indexes[idx]]);
     }
 
     // check the foreground probability and fill in the tables
-    if (fg_x < vs.prob_fg)
+    if (fg_x < vs.fg_prob)
     {
         uint16_t dm = vs.rng.uniform(0, vs.fg_br_table.size());
         tmp_br1_table.push_back(vs.fg_br_table[dm].first);
         tmp_br2_table.push_back(vs.fg_br_table[dm].second);
 
-        dm_values.push_back(vs.fg_dm.first);
+        dm_vals.push_back(vs.fg_dm_value);
     }
 
     //N = (uint32_t)(img_h * img_w * 0.001);
-    switch (vs.dataset_type)
+    switch (dataset_type)
     {
     case 0:
         generate_random_image(img_f1, vs.rng, img_h, img_w, vs.BN, vs.scale);
@@ -165,10 +186,10 @@ void generate_scene(unsigned int img_w, unsigned int img_h, unsigned char* img_p
     cv::filter2D(img_f2, img_f2, -1, vs.blur_kernels[tmp_br2_table[0]], cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
 
     // create the initial depth map
-    cv::Mat depth_map(img_h, img_w, CV_8UC1, cv::Scalar::all(dm_values[0]));
+    cv::Mat depth_map(img_h, img_w, CV_8UC1, cv::Scalar::all(dm_vals[0]));
 
     // blur imgs using dm_values and random masks
-    for (idx = 1; idx < dm_values.size(); ++idx)
+    for (idx = 1; idx < dm_vals.size(); ++idx)
     {
         f1_layer = img_f1.clone();
         f2_layer = img_f2.clone();
@@ -177,7 +198,7 @@ void generate_scene(unsigned int img_w, unsigned int img_h, unsigned char* img_p
         //min_N = (int32_t)ceil((num_objects) / (1 + exp(-0.35 * dm_values[idx] + (0.035 * num_objects))) + 2);
         //min_N = (int32_t)(num_objects / (double)(1.0 + exp(-0.1 * (depthmap_values[dm_indexes[idx]] - (max_dm_value-min_dm_value)/2.0))) + 5);
         //min_N = (int32_t)ceil(((max_dm_value) / (double)(1.0 + exp(-0.35 * depthmap_values[dm_values[idx]] + (0.175 * max_dm_value)))) + 3);
-        min_N = (int32_t)ceil(((vs.max_dm_value) / (double)(1.0 + exp(-0.365 * dm_values[idx] + (0.175 * vs.max_dm_value)))) + 3);
+        min_N = (int32_t)ceil(((vs.bg_dm_value) / (double)(1.0 + exp(-0.365 * dm_vals[idx] + (0.175 * vs.bg_dm_value)))) + 3);
         max_N = (int32_t)ceil(2.0 * min_N);  // 2.0
 
         N = vs.rng.uniform(min_N, max_N + 1);
@@ -186,7 +207,7 @@ void generate_scene(unsigned int img_w, unsigned int img_h, unsigned char* img_p
         scale2 = 60.0 / (double)img_size.width;
 
         // 
-        switch (vs.dataset_type)
+        switch (dataset_type)
         {
         case 0:
             generate_random_image(random_img, vs.rng, img_h, img_w, vs.BN, scale2);
@@ -210,7 +231,7 @@ void generate_scene(unsigned int img_w, unsigned int img_h, unsigned char* img_p
         overlay_image(f2_layer, output_img, mask);
 
         // overlay depthmap
-        overlay_depthmap(depth_map, mask, dm_values[idx]);
+        overlay_depthmap(depth_map, mask, dm_vals[idx]);
 
         // blur f1
         blur_layer(f1_layer, img_f1, mask, vs.blur_kernels[tmp_br1_table[idx]], vs.rng);
@@ -220,67 +241,4 @@ void generate_scene(unsigned int img_w, unsigned int img_h, unsigned char* img_p
     }
 
 }   // end of generate_scene
-
-
-
-
-////-----------------------------------------------------------------------------
-//int main(int argc, char** argv)
-//{
-//    uint32_t idx = 0, jdx = 0;
-//    uint32_t img_h = 512;
-//    uint32_t img_w = 512;
-//    cv::Size img_size(img_h, img_w);
-//
-//    cv::RNG rng(time(NULL));
-//
-//    // timing variables
-//    typedef std::chrono::duration<double> d_sec;
-//    auto start_time = chrono::system_clock::now();
-//    auto stop_time = chrono::system_clock::now();
-//    auto elapsed_time = chrono::duration_cast<d_sec>(stop_time - start_time);
-//    std::string platform;
-//
-//    cv::Mat img_f1, img_f2;
-//    cv::Mat kernel;
-//    cv::Mat output_img, mask;
-//    cv::Mat f1_layer, f2_layer;
-//    cv::Mat random_img;
-//    std::vector<uint16_t> dm_values;
-//    std::vector<uint16_t> dm_indexes;
-//    int32_t min_N, max_N;
-//    uint32_t N;
-//    double scale = 0.1;
-//    uint32_t BN = 1000;
-//
-//    std::string scenario_name;
-//    std::pair<uint8_t, double> bg_dm;
-//    std::pair<uint8_t, double> fg_dm;
-//    std::vector<std::pair<uint8_t, uint8_t>> bg_br_table;
-//    std::vector<std::pair<uint8_t, uint8_t>> fg_br_table;
-//    double prob_bg = 0.31;    // set the probablility of selecting the background depthmap value
-//    double prob_fg = 0.35;    // set the probability of selecting the foreground depthmap value
-//    double bg_x = 0, fg_x = 0;
-//
-//    std::vector<cv::Mat> blur_kernels;
-//    std::vector<cv::Mat> fft_blur_kernels;
-//
-//    std::vector<uint8_t> depthmap_values;
-//    std::vector<double> sigma_table;
-//    std::vector<uint8_t> br1_table, tmp_br1_table;
-//    std::vector<uint8_t> br2_table, tmp_br2_table;
-//    
-//    // uint8_t aperture;
-//    // uint16_t slope;
-//    // uint16_t intercept;
-//    // uint32_t wavelength_min;
-//    // uint32_t wavelength_max;
-//    // double refractive_index_min;
-//    // double refractive_index_max;
-//    
-//    int32_t max_dm_num;
-//    uint32_t num_objects;
-//
-//
-//}   // end of main
 
