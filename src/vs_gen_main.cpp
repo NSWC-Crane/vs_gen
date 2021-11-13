@@ -98,16 +98,18 @@ void generate_scene(unsigned int img_w,
 
     cv::Mat random_img, output_img, mask;
     cv::Mat f1_layer, f2_layer;
-    double scale2;
+    double scale = 0.1;
+    double mask_scale = 1.339286e-4 * std::max(img_w, img_h) + 0.061429;
 
     // assigned the input pointers to cv:Mat containers
     cv::Mat img_f1 = cv::Mat(img_h, img_w, CV_8UC3, img_f1_t);
     cv::Mat img_f2 = cv::Mat(img_h, img_w, CV_8UC3, img_f2_t);
     cv::Mat dm = cv::Mat(img_h, img_w, CV_8UC1, dm_t);
-    cv::Size img_size(img_h, img_w);
+    //cv::Size img_size(img_h, img_w);
 
     // generate random dm_values that include the foreground and background values
     int32_t tmp_dm_num = vs.max_dm_vals_per_image;
+    uint32_t BN = 1.9 * std::max(img_w, img_h);
 
     // get the probablility that the background depthmap value will be used
     double bg_x = vs.rng.uniform(0.0, 1.0);
@@ -156,7 +158,7 @@ void generate_scene(unsigned int img_w,
     switch (dataset_type)
     {
     case 0:
-        generate_random_image(img_f1, vs.rng, img_h, img_w, vs.BN, vs.scale);
+        generate_random_image(img_f1, vs.rng, img_h, img_w, BN, scale);
         break;
 
     //case 1:
@@ -203,16 +205,16 @@ void generate_scene(unsigned int img_w,
         min_N = (int32_t)ceil(((vs.bg_dm_value) / (double)(1.0 + exp(-0.365 * dm_vals[idx] + (0.175 * vs.bg_dm_value)))) + 3);
         max_N = (int32_t)ceil(2.0 * min_N);  // 2.0
 
-        N = vs.rng.uniform(min_N, max_N + 1);
+        N = std::ceill(vs.rng.uniform(min_N, max_N + 1) * (std::max(img_w, img_h)/512.0));
 
         // define the scale factor
-        scale2 = 60.0 / (double)img_size.width;
+        //scale = 0.1;           // 60.0 / (double)img_w;
 
         // 
         switch (dataset_type)
         {
         case 0:
-            generate_random_image(random_img, vs.rng, img_h, img_w, vs.BN, scale2);
+            generate_random_image(random_img, vs.rng, img_h, img_w, BN, scale);
             break;
 
         //case 1:
@@ -227,7 +229,7 @@ void generate_scene(unsigned int img_w,
         }
 
         // generate random overlay
-        generate_random_overlay(random_img, vs.rng, output_img, mask, N, vs.scale);
+        generate_random_overlay(random_img, vs.rng, output_img, mask, N, mask_scale);
 
         overlay_image(f1_layer, output_img, mask);
         overlay_image(f2_layer, output_img, mask);
@@ -242,9 +244,12 @@ void generate_scene(unsigned int img_w,
         blur_layer(f2_layer, img_f2, mask, vs.blur_kernels[tmp_br2_table[idx]], vs.rng);
     }
 
-    img_f1_t = img_f1.data;
-    img_f2_t = img_f2.data;
-    dm_t = dm.data;
+    std::copy(img_f1.data, img_f1.data + (img_w * img_h * 3), img_f1_t);
+    std::copy(img_f2.data, img_f2.data + (img_w * img_h * 3), img_f2_t);
+    std::copy(dm.data, dm.data + (img_w * img_h), dm_t);
+    //img_f1_t = img_f1.data;
+    //img_f2_t = img_f2.data;
+    //dm_t = dm.data;
 
 }   // end of generate_scene
 

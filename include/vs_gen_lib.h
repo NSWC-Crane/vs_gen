@@ -6,8 +6,7 @@
     #ifdef LIB_EXPORTS
         #define VS_GEN_LIB __declspec(dllexport)
     #else
-        #define VS_GEN_LIB 
-//__declspec(dllimport)
+        #define VS_GEN_LIB __declspec(dllimport)
     #endif
 
 #else
