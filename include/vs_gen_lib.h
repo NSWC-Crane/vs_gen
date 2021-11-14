@@ -14,6 +14,14 @@
 
 #endif
 
+// ----------------------------------------------------------------------------------------
+#ifdef __cplusplus
+extern "C" {
+#endif
+    VS_GEN_LIB void init_from_file(const char* fn);
+#ifdef __cplusplus
+}
+#endif
 
 // ----------------------------------------------------------------------------------------
 #ifdef __cplusplus
@@ -43,7 +51,8 @@ extern "C" {
 #ifdef __cplusplus
 extern "C" {
 #endif
-    VS_GEN_LIB void generate_scene(unsigned int img_w, 
+    VS_GEN_LIB void generate_scene(double scale, 
+        unsigned int img_w,
         unsigned int img_h, 
         unsigned char* img_f1_t, 
         unsigned char* img_f2_t, 

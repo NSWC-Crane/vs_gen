@@ -22,6 +22,8 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 
+#include <file_parser.h>
+
 //-----------------------------------------------------------------------------
 bool compare(std::pair<uint8_t, uint8_t> p1, std::pair<uint8_t, uint8_t> p2)
 {
@@ -85,6 +87,11 @@ public:
     //    generate_blur_kernels();
     //}
 
+    ~vs_gen()
+    {
+
+    }
+
     //-----------------------------------------------------------------------------
     inline void init(uint32_t sig_tbl_num,
         double* sigma_table_t,
@@ -133,16 +140,110 @@ public:
 
     }
 
-    //vs_gen(vs_gen v_)
-    //{
-
-    //}
-
-
-    ~vs_gen() 
+    //-----------------------------------------------------------------------------
+    inline void read_params(std::string param_filename /*,
+        std::pair<uint8_t, double>& bg_dm,
+        std::pair<uint8_t, double>& fg_dm,
+        std::vector<std::pair<uint8_t, uint8_t>>& bg_br_table,
+        std::vector<std::pair<uint8_t, uint8_t>>& fg_br_table,
+        std::vector<uint8_t>& depthmap_values,
+        std::vector<double>& sigma_table,
+        std::vector<uint8_t>& br1_table,
+        std::vector<uint8_t>& br2_table,
+        //uint8_t& dataset_type,
+        uint32_t& img_h,
+        uint32_t& img_w,
+        int32_t& max_dm_num
+        //uint32_t& num_objects,
+        //uint32_t& num_images
+        //std::string& save_location*/
+    )
     {
+        uint32_t idx = 0, jdx = 0;
 
-    }
+        std::vector<std::vector<std::string>> params;
+        parse_csv_file(param_filename, params);
+
+        for (idx = 0; idx < params.size(); ++idx)
+        {
+            switch (idx)
+            {
+            // #0 background blur radius values, br1,br2, br1,br2,... 
+            case 0:
+                try {
+                    bg_dm_value = (uint8_t)std::stoi(params[idx][0]);
+                    bg_prob = std::stod(params[idx][1]);
+
+                    for (jdx = 2; jdx < params[idx].size(); jdx += 2)
+                    {
+                        bg_br_table.push_back(std::make_pair((uint8_t)std::stoi(params[idx][jdx]), (uint8_t)std::stoi(params[idx][jdx + 1])));
+                    }
+                }
+                catch (...)
+                {
+                    throw std::runtime_error("Error parsing line 0 - index: " + std::to_string(jdx));
+                }
+                break;
+                // #1 foreground blur radius values, br1,br2, br1,br2,...  
+            case 1:
+                try {
+                    fg_dm_value = (uint8_t)std::stoi(params[idx][0]);
+                    fg_prob = std::stod(params[idx][1]);
+
+                    for (jdx = 2; jdx < params[idx].size(); jdx += 2)
+                    {
+                        fg_br_table.push_back(std::make_pair((uint8_t)std::stoi(params[idx][jdx]), (uint8_t)std::stoi(params[idx][jdx + 1])));
+                    }
+                }
+                catch (...)
+                {
+                    throw std::runtime_error("Error parsing line 1 - index: " + std::to_string(jdx));
+                }
+                break;
+                // #2 ROI depthmap values 
+            case 2:
+                for (jdx = 0; jdx < params[idx].size(); ++jdx)
+                {
+                    dm_values.push_back((uint8_t)std::stoi(params[idx][jdx]));
+                }
+                break;
+                // #3 sigma values, the number of values should be greater than the number of depthmap values, DM values are used to index sigma values
+            case 3:
+                for (jdx = 0; jdx < params[idx].size(); ++jdx)
+                {
+                    sigma_table.push_back(std::stod(params[idx][jdx]));
+                }
+                break;
+                // #4 blur radius table 1, the number of values should match the number of depthmap values
+            case 4:
+                for (jdx = 0; jdx < params[idx].size(); ++jdx)
+                {
+                    br1_table.push_back((uint8_t)std::stod(params[idx][jdx]));
+                }
+                break;
+                // #5 blur radius table 2, the number of values should match the number of depthmap values
+            case 5:
+                for (jdx = 0; jdx < params[idx].size(); ++jdx)
+                {
+                    br2_table.push_back((uint8_t)std::stod(params[idx][jdx]));
+                }
+                break;
+                // #6 maximum number of depthmap values within a single image
+            case 6:
+                max_dm_vals_per_image = (int32_t)std::stoi(params[idx][0]);
+                break;
+
+            default:
+                break;
+            }
+        }
+
+        rng = cv::RNG(time(NULL));
+
+        // precalculate the blur kernels
+        generate_blur_kernels();
+
+    }   // end of read_params
 
 //-----------------------------------------------------------------------------
 private:
@@ -178,8 +279,6 @@ private:
     }   // end of generate_blur_kernels
 
 };
-
-
 
 
 #endif  // _VS_GEN_HEADER_H_

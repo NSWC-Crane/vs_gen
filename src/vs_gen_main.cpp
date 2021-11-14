@@ -47,11 +47,13 @@ vs_gen vs;
 
 
 ////-----------------------------------------------------------------------------
-//void init_from_file(std::string filename)
-//{
-//
-//
-//}
+void init_from_file(const char* fn)
+{
+    std::string param_filename(fn);
+
+    vs.read_params(param_filename);
+
+}
 
 //-----------------------------------------------------------------------------
 void init(/*params*/
@@ -81,7 +83,8 @@ void init(/*params*/
 
 
 //-----------------------------------------------------------------------------
-void generate_scene(unsigned int img_w, 
+void generate_scene(double scale,
+    unsigned int img_w, 
     unsigned int img_h, 
     unsigned char* img_f1_t, 
     unsigned char* img_f2_t, 
@@ -98,7 +101,7 @@ void generate_scene(unsigned int img_w,
 
     cv::Mat random_img, output_img, mask;
     cv::Mat f1_layer, f2_layer;
-    double scale = 0.1;
+    //double scale = 0.1;
     double mask_scale = 1.339286e-4 * std::max(img_w, img_h) + 0.061429;
 
     // assigned the input pointers to cv:Mat containers
