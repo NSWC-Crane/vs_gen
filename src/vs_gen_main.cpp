@@ -112,7 +112,7 @@ void generate_scene(double scale,
 
     // generate random dm_values that include the foreground and background values
     int32_t tmp_dm_num = vs.max_dm_vals_per_image;
-    uint32_t BN = 1.9 * std::max(img_w, img_h);
+    uint32_t BN = (uint32_t)std::floor(1.9 * std::max(img_w, img_h));
 
     // get the probablility that the background depthmap value will be used
     double bg_x = vs.rng.uniform(0.0, 1.0);
@@ -208,7 +208,7 @@ void generate_scene(double scale,
         min_N = (int32_t)ceil(((vs.bg_dm_value) / (double)(1.0 + exp(-0.365 * dm_vals[idx] + (0.175 * vs.bg_dm_value)))) + 3);
         max_N = (int32_t)ceil(2.0 * min_N);  // 2.0
 
-        N = std::ceill(vs.rng.uniform(min_N, max_N + 1) * (std::max(img_w, img_h)/512.0));
+        N = (uint32_t)std::ceil(vs.rng.uniform(min_N, max_N + 1) * (std::max(img_w, img_h)/512.0));
 
         // define the scale factor
         //scale = 0.1;           // 60.0 / (double)img_w;

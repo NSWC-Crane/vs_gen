@@ -116,7 +116,7 @@ void generate_random_overlay(cv::Mat random_img, //cv::Size img_size,
 {
 
     // generate random mask
-    generate_random_mask(output_mask, cv::Size(random_img.cols, random_img.rows) , rng, num_shapes, scale*1.3);
+    generate_random_mask(output_mask, cv::Size(random_img.cols, random_img.rows) , rng, num_shapes, scale);
 
     // multiply random_img times output_mask
     cv::multiply(random_img, output_mask, output_img);
