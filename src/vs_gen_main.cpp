@@ -46,8 +46,8 @@
 vs_gen vs;
 
 
-////-----------------------------------------------------------------------------
-void init_from_file(const char* fn)
+//-----------------------------------------------------------------------------
+void init_vs_gen_from_file(const char* fn)
 {
     std::string param_filename(fn);
 
@@ -56,7 +56,7 @@ void init_from_file(const char* fn)
 }
 
 //-----------------------------------------------------------------------------
-void init(/*params*/
+void init_vs_generator(/*params*/
     uint32_t sig_tbl_num,
     double* sigma_table_t,
     uint32_t blur_tbl_num,
@@ -81,9 +81,21 @@ void init(/*params*/
 
 }   // end of init
 
+//-----------------------------------------------------------------------------
+void set_vs_seed(int seed)
+{
+    vs.rng = cv::RNG(seed);
+}
+
+void get_vs_minmax(unsigned short* min_dm_value, unsigned short* max_dm_value)
+{
+    *min_dm_value = vs.fg_dm_value;
+    *max_dm_value = vs.bg_dm_value;
+}
+
 
 //-----------------------------------------------------------------------------
-void generate_scene(double scale,
+void generate_vs_scene(double scale,
     unsigned int img_w, 
     unsigned int img_h, 
     unsigned char* img_f1_t, 

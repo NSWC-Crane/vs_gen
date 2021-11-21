@@ -18,7 +18,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-    VS_GEN_LIB void init_from_file(const char* fn);
+    VS_GEN_LIB void init_vs_gen_from_file(const char* fn);
 #ifdef __cplusplus
 }
 #endif
@@ -27,7 +27,7 @@ extern "C" {
 #ifdef __cplusplus
 extern "C" {
 #endif
-    VS_GEN_LIB void init(uint32_t sig_tbl_num,
+    VS_GEN_LIB void init_vs_generator(uint32_t sig_tbl_num,
         double* sigma_table_t,
         uint32_t blur_tbl_num,
         uint8_t* dm_values_t,
@@ -51,7 +51,25 @@ extern "C" {
 #ifdef __cplusplus
 extern "C" {
 #endif
-    VS_GEN_LIB void generate_scene(double scale, 
+    VS_GEN_LIB void set_vs_seed(int seed);
+#ifdef __cplusplus
+}
+#endif
+
+// ----------------------------------------------------------------------------------------
+#ifdef __cplusplus
+extern "C" {
+#endif
+    VS_GEN_LIB void get_vs_minmax(unsigned short* min_dm_value, unsigned short* max_dm_value);
+#ifdef __cplusplus
+}
+#endif
+
+// ----------------------------------------------------------------------------------------
+#ifdef __cplusplus
+extern "C" {
+#endif
+    VS_GEN_LIB void generate_vs_scene(double scale,
         unsigned int img_w,
         unsigned int img_h, 
         unsigned char* img_f1_t, 

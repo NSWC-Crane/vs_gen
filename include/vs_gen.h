@@ -67,26 +67,6 @@ public:
 
     vs_gen() = default;
 
-    //vs_gen(
-    //    std::vector<double> st_,
-    //    std::vector<uint8_t> dm_values_,
-    //    std::vector<uint8_t> br1_table_,
-    //    std::vector<uint8_t> br2_table_,
-    //    std::vector<std::pair<uint8_t, uint8_t>> bg_br_table_,
-    //    std::vector<std::pair<uint8_t, uint8_t>> fg_br_table_,
-    //    double fg_prob_,
-    //    double bg_prob_,
-    //    uint16_t fg_dm_value_,
-    //    uint16_t bg_dm_value_
-    //) : sigma_table(st_), dm_values(dm_values_), br1_table(br1_table_), br2_table(br2_table_), 
-    //    bg_br_table(bg_br_table_), fg_br_table(fg_br_table_), fg_prob(fg_prob_), bg_prob(bg_prob_), 
-    //    fg_dm_value(fg_dm_value_), bg_dm_value(bg_dm_value_)
-    //{
-    //    rng = cv::RNG(time(NULL));
-
-    //    generate_blur_kernels();
-    //}
-
     ~vs_gen()
     {
 
