@@ -57,21 +57,21 @@ void init_vs_gen_from_file(const char* fn)
 
 //-----------------------------------------------------------------------------
 void init_vs_generator(/*params*/
-    uint32_t sig_tbl_num,
+    unsigned int sig_tbl_num,
     double* sigma_table_t,
-    uint32_t blur_tbl_num,
-    uint8_t* dm_values_t,
-    uint8_t* br1_table_t,
-    uint8_t* br2_table_t,
-    uint32_t bg_tbl_num,
+    unsigned int blur_tbl_num,
+    unsigned char* dm_values_t,
+    unsigned char* br1_table_t,
+    unsigned char* br2_table_t,
+    unsigned int bg_tbl_num,
     void* bg_tbl_t,
-    uint32_t fg_tbl_num,
+    unsigned int fg_tbl_num,
     void* fg_tbl_t,
     double fg_prob_,
     double bg_prob_,
-    uint16_t fg_dm_value_,
-    uint16_t bg_dm_value_,
-    int32_t max_dm_vals_per_image_
+    unsigned short fg_dm_value_,
+    unsigned short bg_dm_value_,
+    int max_dm_vals_per_image_
 )
 {
 
