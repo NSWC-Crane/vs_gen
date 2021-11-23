@@ -91,7 +91,10 @@ public:
         ) 
     {
 
-        rng = cv::RNG(time(NULL));
+        auto t = time(NULL);
+        rng = cv::RNG(t);
+
+        //std::cout << "seed: " << t << std::endl;
 
         fg_prob = fg_prob_;
         bg_prob = bg_prob_;
@@ -218,7 +221,10 @@ public:
             }
         }
 
-        rng = cv::RNG(time(NULL));
+        auto t = time(NULL);
+        rng = cv::RNG(t);
+
+        //std::cout << "seed: " << t << std::endl;
 
         // precalculate the blur kernels
         generate_blur_kernels();
