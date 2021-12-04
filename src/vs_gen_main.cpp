@@ -95,7 +95,7 @@ void get_vs_minmax(unsigned short* min_dm_value, unsigned short* max_dm_value)
 
 
 //-----------------------------------------------------------------------------
-void generate_vs_scene(double scale,
+void generate_vs_scene(double pattern_scale,
     unsigned int img_w, 
     unsigned int img_h, 
     unsigned char* img_f1_t, 
@@ -113,8 +113,10 @@ void generate_vs_scene(double scale,
 
     cv::Mat random_img, output_img, mask;
     cv::Mat f1_layer, f2_layer;
-    //double scale = 0.1;
-    double mask_scale = 1.339286e-4 * std::max(img_w, img_h) + 0.061429;
+    //double mask_scale = 1.339286e-4 * std::max(img_w, img_h) + 0.061429;
+    double shape_scale = -0.000000203451 * std::max(img_w, img_h) * std::max(img_w, img_h) + 0.000429687500 * std::max(img_w, img_h) + 0.043333333333;
+    shape_scale = vs.rng.uniform(shape_scale*0.65, shape_scale);
+
 
     // assigned the input pointers to cv:Mat containers
     cv::Mat img_f1 = cv::Mat(img_h, img_w, CV_8UC3, img_f1_t);
@@ -173,7 +175,7 @@ void generate_vs_scene(double scale,
     switch (dataset_type)
     {
     case 0:
-        generate_random_image(img_f1, vs.rng, img_h, img_w, BN, scale);
+        generate_random_image(img_f1, vs.rng, img_h, img_w, BN, pattern_scale);
         break;
 
     //case 1:
@@ -229,7 +231,7 @@ void generate_vs_scene(double scale,
         switch (dataset_type)
         {
         case 0:
-            generate_random_image(random_img, vs.rng, img_h, img_w, BN, scale);
+            generate_random_image(random_img, vs.rng, img_h, img_w, BN, pattern_scale);
             break;
 
         //case 1:
@@ -244,7 +246,7 @@ void generate_vs_scene(double scale,
         }
 
         // generate random overlay
-        generate_random_overlay(random_img, vs.rng, output_img, mask, N, mask_scale);
+        generate_random_overlay(random_img, vs.rng, output_img, mask, N, shape_scale);
 
         overlay_image(f1_layer, output_img, mask);
         overlay_image(f2_layer, output_img, mask);
