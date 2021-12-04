@@ -13,7 +13,7 @@ inline void generate_random_shape(cv::Mat& img,
     long nr,
     long nc,
     cv::Scalar color, 
-    double scale
+    double shape_scale
 )
 {
     long x, y;
@@ -40,8 +40,8 @@ inline void generate_random_shape(cv::Mat& img,
     case 0:
 
         // pick a random radi for the ellipse - rng.uniform(min_dim >> 2, min_dim)
-        r1 = (long)std::floor(0.5 * scale * rng.uniform(250, 500));
-        r2 = (long)std::floor(0.5 * scale * rng.uniform(250, 500));
+        r1 = (long)std::floor(0.5 * shape_scale * rng.uniform(250, 500));
+        r2 = (long)std::floor(0.5 * shape_scale * rng.uniform(250, 500));
         a = rng.uniform(0.0, 360.0);
 
         cv::ellipse(img, cv::Point(x, y), cv::Size(r1, r2), a, 0.0, 360.0, color, -1, cv::LineTypes::LINE_8, 0);
@@ -50,8 +50,8 @@ inline void generate_random_shape(cv::Mat& img,
     // filled rectangle
     case 1:
 
-        h = (long)std::floor(scale * rng.uniform(250, 500));
-        w = (long)std::floor(scale * rng.uniform(250, 500));
+        h = (long)std::floor(shape_scale * rng.uniform(250, 500));
+        w = (long)std::floor(shape_scale * rng.uniform(250, 500));
         a = rng.uniform(0.0, 360.0);
 
         // Create the rotated rectangle
@@ -73,8 +73,8 @@ inline void generate_random_shape(cv::Mat& img,
     // 3 to 8 sided filled polygon
     case 2:
 
-        h = (long)std::floor(scale * rng.uniform(250, 500));
-        w = (long)std::floor(scale * rng.uniform(250, 500));
+        h = (long)std::floor(shape_scale * rng.uniform(250, 500));
+        w = (long)std::floor(shape_scale * rng.uniform(250, 500));
 
         s = rng.uniform(3, 9);
         a = 360.0 / (double)s;
@@ -114,7 +114,7 @@ void generate_random_image(
     long nr, 
     long nc, 
     unsigned int N, 
-    double scale   
+    double pattern_scale
 )
 {
     unsigned int idx;
@@ -137,7 +137,7 @@ void generate_random_image(
             C = cv::Scalar(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));
         }
 
-        generate_random_shape(img, rng, nr, nc, C, scale);
+        generate_random_shape(img, rng, nr, nc, C, pattern_scale);
 
     }   // end for loop
 
