@@ -124,23 +124,7 @@ public:
     }
 
     //-----------------------------------------------------------------------------
-    inline void read_params(std::string param_filename /*,
-        std::pair<uint8_t, double>& bg_dm,
-        std::pair<uint8_t, double>& fg_dm,
-        std::vector<std::pair<uint8_t, uint8_t>>& bg_br_table,
-        std::vector<std::pair<uint8_t, uint8_t>>& fg_br_table,
-        std::vector<uint8_t>& depthmap_values,
-        std::vector<double>& sigma_table,
-        std::vector<uint8_t>& br1_table,
-        std::vector<uint8_t>& br2_table,
-        //uint8_t& dataset_type,
-        uint32_t& img_h,
-        uint32_t& img_w,
-        int32_t& max_dm_num
-        //uint32_t& num_objects,
-        //uint32_t& num_images
-        //std::string& save_location*/
-    )
+    inline void read_params(std::string param_filename)
     {
         uint32_t idx = 0, jdx = 0;
 
