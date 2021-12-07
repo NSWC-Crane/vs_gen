@@ -70,6 +70,7 @@ extern "C" {
 extern "C" {
 #endif
     VS_GEN_LIB void generate_vs_scene(double pattern_scale,
+        double shape_scale,
         unsigned int img_w,
         unsigned int img_h, 
         unsigned char* img_f1_t, 

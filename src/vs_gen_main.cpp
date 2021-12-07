@@ -96,6 +96,7 @@ void get_vs_minmax(unsigned short* min_dm_value, unsigned short* max_dm_value)
 
 //-----------------------------------------------------------------------------
 void generate_vs_scene(double pattern_scale,
+    double shape_scale,
     unsigned int img_w, 
     unsigned int img_h, 
     unsigned char* img_f1_t, 
@@ -114,7 +115,8 @@ void generate_vs_scene(double pattern_scale,
     cv::Mat random_img, output_img, mask;
     cv::Mat f1_layer, f2_layer;
     //double mask_scale = 1.339286e-4 * std::max(img_w, img_h) + 0.061429;
-    double shape_scale = -0.000000203451 * std::max(img_w, img_h) * std::max(img_w, img_h) + 0.000429687500 * std::max(img_w, img_h) + 0.043333333333;
+    //double shape_scale = -0.000000203451 * std::max(img_w, img_h) * std::max(img_w, img_h) + 0.000429687500 * std::max(img_w, img_h) + 0.043333333333;
+    //shape_scale = 0.65;
     shape_scale = vs.rng.uniform(shape_scale*0.65, shape_scale);
 
 
