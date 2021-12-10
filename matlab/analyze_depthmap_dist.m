@@ -28,24 +28,25 @@ lib_path = strcat(startpath,'\build\Release\');
 lib_name = 'vs_gen';
 header_file = 'vs_gen_lib.h';
 
+% p = parpool('AttachedFiles',{strcat(startpath,'\include\',header_file)}); 
+
 if(~libisloaded(lib_name))
-    [notfound, warnings] = loadlibrary(strcat(lib_path,lib_name,'.dll'), strcat(startpath,'\include\',header_file));
+%     spmd
+        [notfound, warnings] = loadlibrary(strcat(lib_path,lib_name,'.dll'), strcat(startpath,'\include\',header_file));
+%     end
 end
 
 if(~libisloaded(lib_name))
-    fprintf('\nThe %s library did not load correctly!',  strcat(lib_path,lib_name,'.dll'));    
+    fprintf('\nThe %s library did not load correctly!\n',  strcat(lib_path,lib_name,'.dll'));    
     return;
 end
 
 % initialize the generator using the file
 calllib(lib_name,'init_vs_gen_from_file',fullfile(data_path, data_file));
 
-% number of images
-N = 2000;
-
 % image size
-img_w = 64;
-img_h = 64;
+img_w = 512;
+img_h = 512;
 
 img_f1 = uint8(zeros(img_h * img_w * 3, 1));
 img_f2 = uint8(zeros(img_h * img_w * 3, 1));
@@ -67,23 +68,39 @@ max_dm_value = double(max_dm_value_t.Value);
 
 
 %% grab some data
-dm_hist = zeros(max_dm_value + 1,1);
+% number of images
+N = 1000;
 
-shape_scale = 0.057;
+dm_hist = zeros(N, max_dm_value + 1);
+
+shape_scale = 0.185;    % 0.07 - 64x64, 0.095 - 128x128, 0.14 - 256x256, 0.21 - 512x512
 
 fprintf('Starting Scene Generation ...\n');
 
 for idx=1:N
     
+    %if(~libisloaded(lib_name))
+    %    loadlibrary(strcat(lib_path,lib_name,'.dll'), strcat(startpath,'\include\',header_file));
+    %    calllib(lib_name,'init_vs_gen_from_file',fullfile(data_path, data_file));
+    % generate the scene
+    %calllib(lib_name,'generate_vs_scene', 0.1, shape_scale, img_w, img_h, img_f1_t, img_f2_t, dm_t);        
+    %else
     % generate the scene
     calllib(lib_name,'generate_vs_scene', 0.1, shape_scale, img_w, img_h, img_f1_t, img_f2_t, dm_t);
-
+    %end   
+    
+%     parfeval(@calllib, lib_name,'generate_vs_scene', 0.1, shape_scale, img_w, img_h, img_f1_t, img_f2_t, dm_t);
+    
     % get the depthmap images
     dm = double(dm_t.Value);
     
+    dm_tmp = zeros(1, max_dm_value + 1);
+    
     for jdx=1:(max_dm_value + 1)
-        dm_hist(jdx,1) = dm_hist(jdx,1) + sum(dm==(jdx-1));
-    end 
+        dm_tmp(1, jdx) = dm_tmp(1, jdx) + sum(dm==(jdx-1));
+    end
+    
+    dm_hist(idx, :) = dm_tmp;
     
     fprintf('.');
     if(mod(idx, 100) == 0)
@@ -92,27 +109,32 @@ for idx=1:N
         
 end
 
-% % deinterleave the pointers and stack to create the images
-% img_f1 = cat(3, reshape(img_f1_t.Value(3:3:end), [img_h, img_w])', reshape(img_f1_t.Value(2:3:end), [img_h, img_w])', reshape(img_f1_t.Value(1:3:end), [img_h, img_w])');
-% img_f2 = cat(3, reshape(img_f2_t.Value(3:3:end), [img_h, img_w])', reshape(img_f2_t.Value(2:3:end), [img_h, img_w])', reshape(img_f2_t.Value(1:3:end), [img_h, img_w])');
-% 
-% dm = reshape(dm_t.Value, [img_h, img_w])';
-% 
-% figure(plot_num); 
-% image(img_f1);
-% axis off;
-% plot_num = plot_num + 1;
-% 
-% figure(plot_num); 
-% image(img_f2);
-% axis off;
-% plot_num = plot_num + 1;
-% 
-% figure(plot_num); 
-% imagesc(dm); 
-% colormap(gray((max_dm_value + 1)  - min_dm_value));
-% axis off;
-% plot_num = plot_num + 1;
+dm_hist = sum(dm_hist, 1);
+
+
+if(false)
+    % deinterleave the pointers and stack to create the images
+    img_f1 = cat(3, reshape(img_f1_t.Value(3:3:end), [img_h, img_w])', reshape(img_f1_t.Value(2:3:end), [img_h, img_w])', reshape(img_f1_t.Value(1:3:end), [img_h, img_w])');
+    img_f2 = cat(3, reshape(img_f2_t.Value(3:3:end), [img_h, img_w])', reshape(img_f2_t.Value(2:3:end), [img_h, img_w])', reshape(img_f2_t.Value(1:3:end), [img_h, img_w])');
+    
+    dm = reshape(dm_t.Value, [img_h, img_w])';
+    
+    figure(plot_num); 
+    image(img_f1);
+    axis off;
+    plot_num = plot_num + 1;
+    
+    figure(plot_num); 
+    image(img_f2);
+    axis off;
+    plot_num = plot_num + 1;
+    
+    figure(plot_num); 
+    imagesc(dm); 
+    colormap(gray((max_dm_value + 1)  - min_dm_value));
+    axis off;
+    plot_num = plot_num + 1;
+end
 
 fprintf('\nComplete!\n\n');
 
