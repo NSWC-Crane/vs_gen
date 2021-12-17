@@ -263,6 +263,10 @@ void generate_vs_scene(double pattern_scale,
         blur_layer(f2_layer, img_f2, mask, vs.blur_kernels[tmp_br2_table[idx]], vs.rng);
     }
 
+    // blur the final images a little - sigma = 1.8975
+    cv::filter2D(img_f1, img_f1, -1, vs.blur_kernels[10], cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
+    cv::filter2D(img_f2, img_f2, -1, vs.blur_kernels[10], cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
+
     std::copy(img_f1.data, img_f1.data + (img_w * img_h * 3), img_f1_t);
     std::copy(img_f2.data, img_f2.data + (img_w * img_h * 3), img_f2_t);
     std::copy(dm.data, dm.data + (img_w * img_h), dm_t);
