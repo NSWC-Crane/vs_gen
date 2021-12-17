@@ -30,55 +30,93 @@ header_file = 'vs_gen_lib.h';
 
 % p = parpool('AttachedFiles',{strcat(startpath,'\include\',header_file)}); 
 
-if(~libisloaded(lib_name))
-%     spmd
-        [notfound, warnings] = loadlibrary(strcat(lib_path,lib_name,'.dll'), strcat(startpath,'\include\',header_file));
-%     end
-end
-
-if(~libisloaded(lib_name))
-    fprintf('\nThe %s library did not load correctly!\n',  strcat(lib_path,lib_name,'.dll'));    
-    return;
-end
-
-% initialize the generator using the file
-calllib(lib_name,'init_vs_gen_from_file',fullfile(data_path, data_file));
+% if(~libisloaded(lib_name))
+% %     spmd
+%         [notfound, warnings] = loadlibrary(strcat(lib_path,lib_name,'.dll'), strcat(startpath,'\include\',header_file));
+% %     end
+% end
+% 
+% if(~libisloaded(lib_name))
+%     fprintf('\nThe %s library did not load correctly!\n',  strcat(lib_path,lib_name,'.dll'));    
+%     return;
+% end
+% 
+% % initialize the generator using the file
+% calllib(lib_name,'init_vs_gen_from_file',fullfile(data_path, data_file));
 
 % image size
 img_w = 512;
 img_h = 512;
 
-img_f1 = uint8(zeros(img_h * img_w * 3, 1));
-img_f2 = uint8(zeros(img_h * img_w * 3, 1));
-dm = uint8(zeros(img_h * img_w, 1));
+% img_f1 = uint8(zeros(img_h * img_w * 3, 1));
+% img_f2 = uint8(zeros(img_h * img_w * 3, 1));
+% dm = uint8(zeros(img_h * img_w, 1));
 
-% create the correct matlab pointers to pass into the function
-img_f1_t = libpointer('uint8Ptr', img_f1);
-img_f2_t = libpointer('uint8Ptr', img_f2);
-dm_t = libpointer('uint8Ptr', dm);
+% % create the correct matlab pointers to pass into the function
+% img_f1_t = libpointer('uint8Ptr', img_f1);
+% img_f2_t = libpointer('uint8Ptr', img_f2);
+% dm_t = libpointer('uint8Ptr', dm);
+% 
+% 
+% % void get_vs_minmax(unsigned short* min_dm_value, unsigned short* max_dm_value);
+% min_dm_value_t = libpointer('uint16Ptr', 0);
+% max_dm_value_t = libpointer('uint16Ptr', 0);
+% calllib(lib_name,'get_vs_minmax', min_dm_value_t, max_dm_value_t);
 
-
-% void get_vs_minmax(unsigned short* min_dm_value, unsigned short* max_dm_value);
-min_dm_value_t = libpointer('uint16Ptr', 0);
-max_dm_value_t = libpointer('uint16Ptr', 0);
-calllib(lib_name,'get_vs_minmax', min_dm_value_t, max_dm_value_t);
-
-min_dm_value = double(min_dm_value_t.Value);
-max_dm_value = double(max_dm_value_t.Value);
+min_dm_value = 0; %double(min_dm_value_t.Value);
+max_dm_value = 22; %double(max_dm_value_t.Value);
 
 
 %% grab some data
 % number of images
-N = 1000;
+N = 2000;
 
 dm_hist = zeros(N, max_dm_value + 1);
 
-shape_scale = 0.185;    % 0.07 - 64x64, 0.095 - 128x128, 0.14 - 256x256, 0.21 - 512x512
 
+%  64 x  64: shape_scale = 0.060; good
+% 128 x 128: shape_scale = 0.090; good
+% 256 x 256: shape_scale = 0.120; good 
+% 512 x 512: shape_scale = 0.180; good
+shape_scale = 0.170;
+
+tic;
 fprintf('Starting Scene Generation ...\n');
 
-for idx=1:N
+parfor idx=1:N
     
+    fprintf('Iteration: %04d\n', idx);
+    
+    if(~libisloaded(lib_name))
+    %     spmd
+            [notfound, warnings] = loadlibrary(strcat(lib_path,lib_name,'.dll'), strcat(startpath,'\include\',header_file));
+    %     end
+    end
+
+    if(~libisloaded(lib_name))
+        fprintf('\nThe %s library did not load correctly!\n',  strcat(lib_path,lib_name,'.dll'));    
+        %return;
+    end
+
+    % initialize the generator using the file
+    calllib(lib_name,'init_vs_gen_from_file',fullfile(data_path, data_file));
+
+    img_f1 = uint8(zeros(img_h * img_w * 3, 1));
+    img_f2 = uint8(zeros(img_h * img_w * 3, 1));
+    dm = uint8(zeros(img_h * img_w, 1));
+
+    % create the correct matlab pointers to pass into the function
+    img_f1_t = libpointer('uint8Ptr', img_f1);
+    img_f2_t = libpointer('uint8Ptr', img_f2);
+    dm_t = libpointer('uint8Ptr', dm);
+
+
+%     % void get_vs_minmax(unsigned short* min_dm_value, unsigned short* max_dm_value);
+%     min_dm_value_t = libpointer('uint16Ptr', 0);
+%     max_dm_value_t = libpointer('uint16Ptr', 0);
+%     calllib(lib_name,'get_vs_minmax', min_dm_value_t, max_dm_value_t);
+
+
     %if(~libisloaded(lib_name))
     %    loadlibrary(strcat(lib_path,lib_name,'.dll'), strcat(startpath,'\include\',header_file));
     %    calllib(lib_name,'init_vs_gen_from_file',fullfile(data_path, data_file));
@@ -88,9 +126,7 @@ for idx=1:N
     % generate the scene
     calllib(lib_name,'generate_vs_scene', 0.1, shape_scale, img_w, img_h, img_f1_t, img_f2_t, dm_t);
     %end   
-    
-%     parfeval(@calllib, lib_name,'generate_vs_scene', 0.1, shape_scale, img_w, img_h, img_f1_t, img_f2_t, dm_t);
-    
+        
     % get the depthmap images
     dm = double(dm_t.Value);
     
@@ -102,12 +138,14 @@ for idx=1:N
     
     dm_hist(idx, :) = dm_tmp;
     
-    fprintf('.');
-    if(mod(idx, 100) == 0)
-        fprintf('\n');
-    end
+%     fprintf('.');
+%     if(mod(idx, 100) == 0)
+%         fprintf('\n');
+%     end
         
 end
+
+toc
 
 dm_hist = sum(dm_hist, 1);
 
@@ -143,7 +181,7 @@ fprintf('\nComplete!\n\n');
 hist_bins = min_dm_value:1:max_dm_value;
 
 figure(plot_num)
-set(gcf,'position',([100,100,1300,600]),'color','w')
+set(gcf,'position',([100,100,1200,400]),'color','w')
 hold on
 box on
 grid on
@@ -174,5 +212,7 @@ ax.Position = [0.05 0.16 0.90 0.79];
 plot_num = plot_num + 1;
 
 return;
-%%
+%% unload the library from memory after we're done with it
+fprintf('Unloading %s\n', lib_name);
 unloadlibrary(lib_name);
+
