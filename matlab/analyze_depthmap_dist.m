@@ -73,12 +73,12 @@ N = 2000;
 
 dm_hist = zeros(N, max_dm_value + 1);
 
-
+% y = 0.00000000261125x3 - 0.00000239054362x2 + 0.00085286458333x + 0.01452380952383
 %  64 x  64: shape_scale = 0.060; good
 % 128 x 128: shape_scale = 0.090; good
 % 256 x 256: shape_scale = 0.120; good 
-% 512 x 512: shape_scale = 0.180; good
-shape_scale = 0.170;
+% 512 x 512: shape_scale = 0.175; good
+shape_scale = 0.00000000261125*(img_w*img_w*img_w) - 0.00000239054362*(img_w*img_w) + 0.00085286458333*img_w + 0.01452380952383;
 
 tic;
 fprintf('Starting Scene Generation ...\n');
