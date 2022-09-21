@@ -64,6 +64,7 @@ public:
 
     int32_t max_dm_vals_per_image;
 
+    uint32_t final_blur_index = 0;
 
     vs_gen() = default;
 
@@ -199,6 +200,9 @@ public:
             case 6:
                 max_dm_vals_per_image = (int32_t)std::stoi(params[idx][0]);
                 break;
+
+            case 7:
+                final_blur_index = (uint32_t)std::stoi(params[idx][0]);
 
             default:
                 break;
