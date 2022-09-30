@@ -23,7 +23,7 @@ fprintf('loading library: %s\n', strcat(lib_path, lib_name, '.dll'));
 fprintf('header file: %s\n', strcat('../include/', hfile));
 
 if(~libisloaded(lib_name))
-    [notfound, warnings] = loadlibrary(strcat(lib_path, lib_name, '.dll'), strcat('../include/', hfile));
+    [notfound, warnings] = loadlibrary(strcat(lib_path, lib_name, '.dll'), strcat('../include/', hfile), 'mfilename', strcat('cbw_prototype_file');
 end
 
 if(~libisloaded(lib_name))

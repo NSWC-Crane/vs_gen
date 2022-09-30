@@ -45,8 +45,8 @@ header_file = 'vs_gen_lib.h';
 % calllib(lib_name,'init_vs_gen_from_file',fullfile(data_path, data_file));
 
 % image size
-img_w = 512;
-img_h = 512;
+img_w = 64;
+img_h = 64;
 
 % img_f1 = uint8(zeros(img_h * img_w * 3, 1));
 % img_f2 = uint8(zeros(img_h * img_w * 3, 1));
@@ -69,27 +69,34 @@ max_dm_value = 22; %double(max_dm_value_t.Value);
 
 %% grab some data
 % number of images
-N = 2000;
+N = 90000*64;
 
 dm_hist = zeros(N, max_dm_value + 1);
+dm_hist2 = zeros(N, max_dm_value + 1);
+dm_hist3 = zeros(N, max_dm_value + 1);
+
 
 % y = 0.00000000261125x3 - 0.00000239054362x2 + 0.00085286458333x + 0.01452380952383
 %  64 x  64: shape_scale = 0.060; good
 % 128 x 128: shape_scale = 0.090; good
 % 256 x 256: shape_scale = 0.120; good 
 % 512 x 512: shape_scale = 0.175; good
-shape_scale = 0.00000000261125*(img_w*img_w*img_w) - 0.00000239054362*(img_w*img_w) + 0.00085286458333*img_w + 0.01452380952383;
+% shape_scale = 0.00000000261125*(img_w*img_w*img_w) - 0.00000239054362*(img_w*img_w) + 0.00085286458333*img_w + 0.01452380952383;
+shape_scale = 0.06;
+
+num_bins = 23;
 
 tic;
 fprintf('Starting Scene Generation ...\n');
 
-parfor idx=1:N
+for idx=1:N
     
     fprintf('Iteration: %04d\n', idx);
     
     if(~libisloaded(lib_name))
     %     spmd
-            [notfound, warnings] = loadlibrary(strcat(lib_path,lib_name,'.dll'), strcat(startpath,'\include\',header_file));
+%             [notfound, warnings] = loadlibrary(strcat(lib_path,lib_name,'.dll'), strcat(startpath,'\include\',header_file), 'mfilename', strcat(startpath,'\matlab\','vs_gen_prototype_file'));
+            [notfound, warnings] = loadlibrary(strcat(lib_path,lib_name,'.dll'), @vs_gen_prototype_file);
     %     end
     end
 
@@ -128,15 +135,29 @@ parfor idx=1:N
     %end   
         
     % get the depthmap images
-    dm = double(dm_t.Value);
+%     dm = double(dm_t.Value);
+    dm = reshape(dm_t.Value, [img_h, img_w])';
+
+    dm = dm(16:47, 16:47);
+    dm = dm(:);
     
     dm_tmp = zeros(1, max_dm_value + 1);
-    
+    dm_tmp2 = zeros(1, max_dm_value + 1);
+    dm_tmp3 = zeros(1, max_dm_value + 1);
+
     for jdx=1:(max_dm_value + 1)
         dm_tmp(1, jdx) = dm_tmp(1, jdx) + sum(dm==(jdx-1));
     end
     
     dm_hist(idx, :) = dm_tmp;
+%     
+%     dm_hist2(idx, :) = histcounts(dm, num_bins);
+%     
+%     
+%     for jdx=1:numel(dm)
+%         dm_tmp3(1, dm(jdx)+1) = dm_tmp3(1, dm(jdx)+1) + 1;      
+%     end
+%     dm_hist3(idx, :) = dm_tmp3;
     
 %     fprintf('.');
 %     if(mod(idx, 100) == 0)
@@ -147,7 +168,9 @@ end
 
 toc
 
-dm_hist = sum(dm_hist, 1);
+dm_hist_sum = 8*sum(dm_hist, 1);
+dm_hist2_sum = 8*sum(dm_hist2, 1);
+dm_hist3_sum = 8*sum(dm_hist3, 1);
 
 
 if(false)
@@ -181,12 +204,14 @@ fprintf('\nComplete!\n\n');
 hist_bins = min_dm_value:1:max_dm_value;
 
 figure(plot_num)
-set(gcf,'position',([100,100,1200,400]),'color','w')
+set(gcf,'position',([100,100,1200,600]),'color','w')
 hold on
 box on
 grid on
 
-b1 = bar(hist_bins(1:end), dm_hist);
+% b1 = bar(hist_bins(1:end), [dm_hist_sum; dm_hist2_sum; dm_hist3_sum]);
+b1 = bar(hist_bins(1:end), dm_hist_sum);
+
 set(gca,'fontweight','bold','FontSize',13);
 
 % X-Axis
@@ -200,12 +225,14 @@ ytickformat('%2.1f');
 ylabel('Depth Map Ratio','fontweight','bold');
 
 b1(1).FaceColor = 'b';
+b1(2).FaceColor = 'r';
 
-title(strcat('Ground Truth Distribution:',32,num2str(shape_scale,'%1.3f')), 'fontweight','bold','FontSize',16);
+title(strcat('Ground Truth Distribution - Shape Scale =',32,num2str(shape_scale,'%1.3f')), 'fontweight','bold','FontSize',15);
+% lgd = legend([b1(1), b1(2)],'Training Data', 'hist2', 'location','southoutside', 'orientation', 'horizontal');
 lgd = legend([b1(1)],'Training Data', 'location','southoutside', 'orientation', 'horizontal');
 
 ax = gca;
-ax.Position = [0.05 0.16 0.90 0.79];
+ax.Position = [0.07 0.16 0.90 0.79];
 
 %print(plot_num, '-dpng', fullfile(save_dir,'dm_combined.png'));
 

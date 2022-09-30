@@ -298,3 +298,8 @@ nbproject/
 
 out/
 .vs/
+*.i
+matlab/vs_gen_thunk_pcwin64.dll
+matlab/vs_gen_thunk_pcwin64.exp
+matlab/vs_gen_thunk_pcwin64.lib
+matlab/vs_gen_prototype_file.m
