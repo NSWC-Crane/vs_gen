@@ -167,7 +167,7 @@ for idx=1:N
 end
 
 toc
-
+%%
 dm_hist_sum = 8*sum(dm_hist, 1);
 dm_hist2_sum = 8*sum(dm_hist2, 1);
 dm_hist3_sum = 8*sum(dm_hist3, 1);
@@ -198,7 +198,7 @@ if(false)
 end
 
 fprintf('\nComplete!\n\n');
-
+%%
 % plot the hist of the dm values
 
 hist_bins = min_dm_value:1:max_dm_value;
@@ -222,7 +222,7 @@ xlabel(strcat('Depth Map Value'),'fontweight','bold')
 
 % Y-Axis
 ytickformat('%2.1f');
-ylabel('Depth Map Ratio','fontweight','bold');
+ylabel('Depth Map Count','fontweight','bold');
 
 b1(1).FaceColor = 'b';
 b1(2).FaceColor = 'r';
