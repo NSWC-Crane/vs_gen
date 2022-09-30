@@ -87,9 +87,8 @@ dm = reshape(dm_t.Value, [img_h, img_w])';
 figure; imagesc(dm); colormap(gray(23));
 
 
-
-
-
+figure
+bar(dm_hist(2:end-1));
 
 
 
