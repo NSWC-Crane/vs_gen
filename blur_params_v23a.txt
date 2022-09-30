@@ -29,8 +29,7 @@
 
 #7 aperture (mm), slope, intercept, min wavelength (nm), max wavelength (nm), min refractive index (m^(-2/3)), max refractive index (m^(-2/3))
 #95, 10, 600, 380, 800, 0.00000000000001, 0.00000000000000001
-11
-
+2
 
 #8 dataset type: 0 -> random image, 1 -> other, 2-> knife edge
 #1
