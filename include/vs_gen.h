@@ -41,7 +41,10 @@ public:
     //std::vector<uint16_t> dm_indexes;
     //int32_t min_N, max_N;
 
-    double scale = 0.1;
+    //double scale = 0.1;
+    double pattern_scale;
+    double shape_scale;
+
     uint32_t BN = 1000;
 
     //std::pair<uint16_t, double> bg_dm;
@@ -201,8 +204,39 @@ public:
                 max_dm_vals_per_image = (int32_t)std::stoi(params[idx][0]);
                 break;
 
+                // #7 scaling parameters: pattern scale, shape sale
             case 7:
-                final_blur_index = (uint32_t)std::stoi(params[idx][0]);
+                try {
+                    pattern_scale = std::stod(params[idx][0]);
+                    shape_scale = std::stod(params[idx][1]);
+                }
+                catch(...)
+                {
+                    throw std::runtime_error("Error parsing line " + std::to_string(idx));
+                }
+                
+                // #8 final blur sigma index
+            case 8:
+                try {
+                    final_blur_index = (uint32_t)std::stoi(params[idx][0]);                
+                }
+                catch(...)
+                {
+                    throw std::runtime_error("Error parsing line " + std::to_string(idx));
+                }
+
+                break;
+
+                // #9 turbulence parameters:
+            case 9:
+                try {
+
+                }
+                catch (...)
+                {
+                    throw std::runtime_error("Error parsing line " + std::to_string(idx));
+                }
+                break;
 
             default:
                 break;

@@ -87,16 +87,35 @@ void set_vs_seed(int seed)
     vs.rng = cv::RNG(seed);
 }
 
+//-----------------------------------------------------------------------------
 void get_vs_minmax(unsigned short* min_dm_value, unsigned short* max_dm_value)
 {
     *min_dm_value = vs.fg_dm_value;
     *max_dm_value = vs.bg_dm_value;
 }
 
+//-----------------------------------------------------------------------------
+void set_vs_shape_scale(double s)
+{
+    vs.shape_scale = s;
+}
 
 //-----------------------------------------------------------------------------
-void generate_vs_scene(double pattern_scale,
-    double shape_scale,
+void set_vs_pattern_scale(double s)
+{
+    vs.pattern_scale = s;
+}
+
+//-----------------------------------------------------------------------------
+double get_vs_shape_scale() { return vs.shape_scale; }
+
+//-----------------------------------------------------------------------------
+double get_vs_pattern_scale() { return vs.pattern_scale; }
+
+//-----------------------------------------------------------------------------
+void generate_vs_scene(
+    //double pattern_scale,
+    //double shape_scale,
     unsigned int img_w, 
     unsigned int img_h, 
     unsigned char* img_f1_t, 
@@ -107,6 +126,7 @@ void generate_vs_scene(double pattern_scale,
     uint32_t idx, N;
     int32_t min_N, max_N;
     uint8_t dataset_type = 0;
+    double shape_scale;
 
     std::vector<uint8_t> tmp_br1_table, tmp_br2_table;
     std::vector<uint16_t> dm_vals;
@@ -117,8 +137,7 @@ void generate_vs_scene(double pattern_scale,
     //double mask_scale = 1.339286e-4 * std::max(img_w, img_h) + 0.061429;
     //double shape_scale = -0.000000203451 * std::max(img_w, img_h) * std::max(img_w, img_h) + 0.000429687500 * std::max(img_w, img_h) + 0.043333333333;
     //shape_scale = 0.65;
-    shape_scale = vs.rng.uniform(shape_scale*0.65, shape_scale);
-
+    shape_scale = vs.rng.uniform(vs.shape_scale*0.65, vs.shape_scale);
 
     // assigned the input pointers to cv:Mat containers
     cv::Mat img_f1 = cv::Mat(img_h, img_w, CV_8UC3, img_f1_t);
@@ -177,7 +196,7 @@ void generate_vs_scene(double pattern_scale,
     switch (dataset_type)
     {
     case 0:
-        generate_random_image(img_f1, vs.rng, img_h, img_w, BN, pattern_scale);
+        generate_random_image(img_f1, vs.rng, img_h, img_w, BN, vs.pattern_scale);
         break;
 
     //case 1:
@@ -233,7 +252,7 @@ void generate_vs_scene(double pattern_scale,
         switch (dataset_type)
         {
         case 0:
-            generate_random_image(random_img, vs.rng, img_h, img_w, BN, pattern_scale);
+            generate_random_image(random_img, vs.rng, img_h, img_w, BN, vs.pattern_scale);
             break;
 
         //case 1:

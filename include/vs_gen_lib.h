@@ -69,8 +69,37 @@ extern "C" {
 #ifdef __cplusplus
 extern "C" {
 #endif
-    VS_GEN_LIB void generate_vs_scene(double pattern_scale,
-        double shape_scale,
+    VS_GEN_LIB void set_vs_shape_scale(double s);
+#ifdef __cplusplus
+}
+#endif
+
+// ----------------------------------------------------------------------------------------
+#ifdef __cplusplus
+extern "C" {
+#endif
+    VS_GEN_LIB double get_vs_shape_scale();
+    VS_GEN_LIB double get_vs_pattern_scale();
+#ifdef __cplusplus
+}
+#endif
+
+// ----------------------------------------------------------------------------------------
+#ifdef __cplusplus
+extern "C" {
+#endif
+    VS_GEN_LIB void set_vs_pattern_scale(double s);
+#ifdef __cplusplus
+}
+#endif
+
+// ----------------------------------------------------------------------------------------
+#ifdef __cplusplus
+extern "C" {
+#endif
+    VS_GEN_LIB void generate_vs_scene(
+        //double pattern_scale,
+        //double shape_scale,
         unsigned int img_w,
         unsigned int img_h, 
         unsigned char* img_f1_t, 

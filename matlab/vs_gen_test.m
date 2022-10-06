@@ -23,7 +23,7 @@ fprintf('loading library: %s\n', strcat(lib_path, lib_name, '.dll'));
 fprintf('header file: %s\n', strcat('../include/', hfile));
 
 if(~libisloaded(lib_name))
-    [notfound, warnings] = loadlibrary(strcat(lib_path, lib_name, '.dll'), strcat('../include/', hfile), 'mfilename', strcat('cbw_prototype_file');
+    [notfound, warnings] = loadlibrary(strcat(lib_path, lib_name, '.dll'), strcat('../include/', hfile), 'mfilename', strcat('vs_gen_prototype_file'));
 end
 
 if(~libisloaded(lib_name))
@@ -31,7 +31,7 @@ if(~libisloaded(lib_name))
 end
 
 % show all the available functions and 
-% libfunctionsview(lib_name);
+libfunctionsview(lib_name);
 % pause(1);
 
 
@@ -67,7 +67,7 @@ dm_hist = zeros(1, num_bins);
 for idx=1:num_iterations
     for jdx=1:num_crops
         % generate the scene
-        calllib(lib_name,'generate_vs_scene', vs_scale, shape_scale, img_w, img_h, img_f1_t, img_f2_t, dm_t);
+        calllib(lib_name,'generate_vs_scene', img_w, img_h, img_f1_t, img_f2_t, dm_t);
 
         dm = reshape(dm_t.Value, [img_h, img_w])';
         dm = dm(16:47, 16:47);

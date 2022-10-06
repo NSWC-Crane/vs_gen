@@ -28,53 +28,19 @@ lib_path = strcat(startpath,'\build\Release\');
 lib_name = 'vs_gen';
 header_file = 'vs_gen_lib.h';
 
-% p = parpool('AttachedFiles',{strcat(startpath,'\include\',header_file)}); 
-
-% if(~libisloaded(lib_name))
-% %     spmd
-%         [notfound, warnings] = loadlibrary(strcat(lib_path,lib_name,'.dll'), strcat(startpath,'\include\',header_file));
-% %     end
-% end
-% 
-% if(~libisloaded(lib_name))
-%     fprintf('\nThe %s library did not load correctly!\n',  strcat(lib_path,lib_name,'.dll'));    
-%     return;
-% end
-% 
-% % initialize the generator using the file
-% calllib(lib_name,'init_vs_gen_from_file',fullfile(data_path, data_file));
-
 % image size
 img_w = 64;
 img_h = 64;
 
-% img_f1 = uint8(zeros(img_h * img_w * 3, 1));
-% img_f2 = uint8(zeros(img_h * img_w * 3, 1));
-% dm = uint8(zeros(img_h * img_w, 1));
-
-% % create the correct matlab pointers to pass into the function
-% img_f1_t = libpointer('uint8Ptr', img_f1);
-% img_f2_t = libpointer('uint8Ptr', img_f2);
-% dm_t = libpointer('uint8Ptr', dm);
-% 
-% 
-% % void get_vs_minmax(unsigned short* min_dm_value, unsigned short* max_dm_value);
-% min_dm_value_t = libpointer('uint16Ptr', 0);
-% max_dm_value_t = libpointer('uint16Ptr', 0);
-% calllib(lib_name,'get_vs_minmax', min_dm_value_t, max_dm_value_t);
-
 min_dm_value = 0; %double(min_dm_value_t.Value);
 max_dm_value = 22; %double(max_dm_value_t.Value);
 
-
 %% grab some data
 % number of images
-N = 90000*64;
+N = 1000;
 
+% dm_hist = zeros(N, max_dm_value + 1);
 dm_hist = zeros(N, max_dm_value + 1);
-dm_hist2 = zeros(N, max_dm_value + 1);
-dm_hist3 = zeros(N, max_dm_value + 1);
-
 
 % y = 0.00000000261125x3 - 0.00000239054362x2 + 0.00085286458333x + 0.01452380952383
 %  64 x  64: shape_scale = 0.060; good
@@ -82,32 +48,41 @@ dm_hist3 = zeros(N, max_dm_value + 1);
 % 256 x 256: shape_scale = 0.120; good 
 % 512 x 512: shape_scale = 0.175; good
 % shape_scale = 0.00000000261125*(img_w*img_w*img_w) - 0.00000239054362*(img_w*img_w) + 0.00085286458333*img_w + 0.01452380952383;
-shape_scale = 0.06;
 
 num_bins = 23;
 
-tic;
+% img_f1 = uint8(zeros(img_h * img_w * 3, 1));
+% img_f2 = uint8(zeros(img_h * img_w * 3, 1));
+% dm = uint8(zeros(img_h * img_w, 1));
+% 
+% % create the correct matlab pointers to pass into the function
+% img_f1_t = libpointer('uint8Ptr', img_f1);
+% img_f2_t = libpointer('uint8Ptr', img_f2);
+% dm_t = libpointer('uint8Ptr', dm);
+
+
+% if(~libisloaded(lib_name))
+% %     spmd
+% %             [notfound, warnings] = loadlibrary(strcat(lib_path,lib_name,'.dll'), strcat(startpath,'\include\',header_file), 'mfilename', strcat(startpath,'\matlab\','vs_gen_prototype_file'));
+%     [notfound, warnings] = loadlibrary(strcat(lib_path,lib_name,'.dll'), @vs_gen_prototype_file);
+%     % initialize the generator using the file
+%     calllib(lib_name,'init_vs_gen_from_file',fullfile(data_path, data_file));
+% %     end
+% end
+% 
+% if(~libisloaded(lib_name))
+%     fprintf('\nThe %s library did not load correctly!\n',  strcat(lib_path,lib_name,'.dll'));    
+%     %return;
+% end
+
+    
 fprintf('Starting Scene Generation ...\n');
+tic;
 
-for idx=1:N
+parfor idx=1:N
     
-    fprintf('Iteration: %04d\n', idx);
+    fprintf('Iteration: %06d\n', idx);
     
-    if(~libisloaded(lib_name))
-    %     spmd
-%             [notfound, warnings] = loadlibrary(strcat(lib_path,lib_name,'.dll'), strcat(startpath,'\include\',header_file), 'mfilename', strcat(startpath,'\matlab\','vs_gen_prototype_file'));
-            [notfound, warnings] = loadlibrary(strcat(lib_path,lib_name,'.dll'), @vs_gen_prototype_file);
-    %     end
-    end
-
-    if(~libisloaded(lib_name))
-        fprintf('\nThe %s library did not load correctly!\n',  strcat(lib_path,lib_name,'.dll'));    
-        %return;
-    end
-
-    % initialize the generator using the file
-    calllib(lib_name,'init_vs_gen_from_file',fullfile(data_path, data_file));
-
     img_f1 = uint8(zeros(img_h * img_w * 3, 1));
     img_f2 = uint8(zeros(img_h * img_w * 3, 1));
     dm = uint8(zeros(img_h * img_w, 1));
@@ -117,61 +92,48 @@ for idx=1:N
     img_f2_t = libpointer('uint8Ptr', img_f2);
     dm_t = libpointer('uint8Ptr', dm);
 
+    if(~libisloaded(lib_name))
+%         [notfound, warnings] = loadlibrary(strcat(lib_path,lib_name,'.dll'), strcat(startpath,'\include\',header_file), 'mfilename', strcat(startpath,'\matlab\','vs_gen_prototype_file'));
+        [notfound, warnings] = loadlibrary(strcat(lib_path,lib_name,'.dll'), @vs_gen_prototype_file);
+        % initialize the generator using the file
+        calllib(lib_name,'init_vs_gen_from_file',fullfile(data_path, data_file));
+    end
 
-%     % void get_vs_minmax(unsigned short* min_dm_value, unsigned short* max_dm_value);
-%     min_dm_value_t = libpointer('uint16Ptr', 0);
-%     max_dm_value_t = libpointer('uint16Ptr', 0);
-%     calllib(lib_name,'get_vs_minmax', min_dm_value_t, max_dm_value_t);
-
-
-    %if(~libisloaded(lib_name))
-    %    loadlibrary(strcat(lib_path,lib_name,'.dll'), strcat(startpath,'\include\',header_file));
-    %    calllib(lib_name,'init_vs_gen_from_file',fullfile(data_path, data_file));
+    if(~libisloaded(lib_name))
+        fprintf('\nThe %s library did not load correctly!\n',  strcat(lib_path,lib_name,'.dll'));    
+        %return;
+    end
+    
     % generate the scene
-    %calllib(lib_name,'generate_vs_scene', 0.1, shape_scale, img_w, img_h, img_f1_t, img_f2_t, dm_t);        
-    %else
-    % generate the scene
-    calllib(lib_name,'generate_vs_scene', 0.1, shape_scale, img_w, img_h, img_f1_t, img_f2_t, dm_t);
+    calllib(lib_name,'generate_vs_scene', img_w, img_h, img_f1_t, img_f2_t, dm_t);
     %end   
         
     % get the depthmap images
-%     dm = double(dm_t.Value);
-    dm = reshape(dm_t.Value, [img_h, img_w])';
-
-    dm = dm(16:47, 16:47);
-    dm = dm(:);
+    dm = double(dm_t.Value);
+%     dm = reshape(dm_t.Value, [img_h, img_w])';
+%     dm = dm(16:47, 16:47);
+%     dm = dm(:);
     
     dm_tmp = zeros(1, max_dm_value + 1);
-    dm_tmp2 = zeros(1, max_dm_value + 1);
-    dm_tmp3 = zeros(1, max_dm_value + 1);
+%     dm_tmp2 = zeros(1, max_dm_value + 1);
+%     dm_tmp3 = zeros(1, max_dm_value + 1);
 
     for jdx=1:(max_dm_value + 1)
-        dm_tmp(1, jdx) = dm_tmp(1, jdx) + sum(dm==(jdx-1));
+        dm_tmp(1, jdx) = sum(dm==(jdx-1));
     end
     
     dm_hist(idx, :) = dm_tmp;
-%     
-%     dm_hist2(idx, :) = histcounts(dm, num_bins);
-%     
-%     
-%     for jdx=1:numel(dm)
-%         dm_tmp3(1, dm(jdx)+1) = dm_tmp3(1, dm(jdx)+1) + 1;      
-%     end
-%     dm_hist3(idx, :) = dm_tmp3;
-    
-%     fprintf('.');
-%     if(mod(idx, 100) == 0)
-%         fprintf('\n');
-%     end
+%     dm_hist = dm_hist + dm_tmp;
+
         
 end
 
 toc
-%%
-dm_hist_sum = 8*sum(dm_hist, 1);
-dm_hist2_sum = 8*sum(dm_hist2, 1);
-dm_hist3_sum = 8*sum(dm_hist3, 1);
+shape_scale = calllib(lib_name,'get_vs_shape_scale'); %0.105;
 
+fprintf('\nComplete!\n\n');
+
+%%
 
 if(false)
     % deinterleave the pointers and stack to create the images
@@ -197,10 +159,9 @@ if(false)
     plot_num = plot_num + 1;
 end
 
-fprintf('\nComplete!\n\n');
 %%
 % plot the hist of the dm values
-
+dm_hist_sum = 8*sum(dm_hist, 1);
 hist_bins = min_dm_value:1:max_dm_value;
 
 figure(plot_num)
@@ -225,7 +186,7 @@ ytickformat('%2.1f');
 ylabel('Depth Map Count','fontweight','bold');
 
 b1(1).FaceColor = 'b';
-b1(2).FaceColor = 'r';
+% b1(2).FaceColor = 'r';
 
 title(strcat('Ground Truth Distribution - Shape Scale =',32,num2str(shape_scale,'%1.3f')), 'fontweight','bold','FontSize',15);
 % lgd = legend([b1(1), b1(2)],'Training Data', 'hist2', 'location','southoutside', 'orientation', 'horizontal');
@@ -235,7 +196,7 @@ ax = gca;
 ax.Position = [0.07 0.16 0.90 0.79];
 
 %print(plot_num, '-dpng', fullfile(save_dir,'dm_combined.png'));
-
+savefig(strcat(startpath,'\matlab\test_100k_', num2str(shape_scale,'%1.4f'),'.fig'));
 plot_num = plot_num + 1;
 
 return;
