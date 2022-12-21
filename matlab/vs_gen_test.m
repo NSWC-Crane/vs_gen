@@ -36,8 +36,8 @@ libfunctionsview(lib_name);
 
 
 % initialize the generator using the file
-fprintf('calling init_vs_gen_from_file function with: %s\n', '../blur_params_v23a.txt');
-calllib(lib_name,'init_vs_gen_from_file', '../blur_params_v23a.txt');
+fprintf('calling init_vs_gen_from_file function with: %s\n', '../blur_params_v23a.yml');
+calllib(lib_name,'init_vs_gen_from_file', '../blur_params_v23a.yml');
 
 % set the seed for the random generator
 %calllib(lib_name,'set_vs_seed', 3851);

@@ -1,5 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
+#include <ryml_all.hpp>
+
 #if defined(_WIN32) | defined(__WIN32__) | defined(__WIN32) | defined(_WIN64) | defined(__WIN64)
 #include <windows.h>
 
@@ -53,7 +55,9 @@ void init_vs_gen_from_file(const char* fn)
 
     vs.read_params(param_filename);
 
-}
+    std::cout << "Parsed file: " << param_filename << std::endl;
+
+}   // end of init_vs_gen_from_file
 
 //-----------------------------------------------------------------------------
 void init_vs_generator(/*params*/

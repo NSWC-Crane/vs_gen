@@ -1,6 +1,8 @@
 #ifndef _VS_GEN_HEADER_H_
 #define _VS_GEN_HEADER_H_
 
+#include <ryml_all.hpp>
+
 // C/C++ includes
 #include <cmath>
 #include <ctime>
@@ -130,118 +132,70 @@ public:
     //-----------------------------------------------------------------------------
     inline void read_params(std::string param_filename)
     {
-        uint32_t idx = 0, jdx = 0;
+        //uint32_t idx = 0, jdx = 0;
 
-        std::vector<std::vector<std::string>> params;
-        parse_csv_file(param_filename, params);
+        std::vector<uint8_t> bg_table_br1, bg_table_br2;
+        std::vector<uint8_t> fg_table_br1, fg_table_br2;
 
-        for (idx = 0; idx < params.size(); ++idx)
-        {
-            switch (idx)
-            {
-            // #0 background blur radius values, br1,br2, br1,br2,... 
-            case 0:
-                try {
-                    bg_dm_value = (uint8_t)std::stoi(params[idx][0]);
-                    bg_prob = std::stod(params[idx][1]);
+        try {
 
-                    for (jdx = 2; jdx < params[idx].size(); jdx += 2)
-                    {
-                        bg_br_table.push_back(std::make_pair((uint8_t)std::stoi(params[idx][jdx]), (uint8_t)std::stoi(params[idx][jdx + 1])));
-                    }
-                }
-                catch (...)
-                {
-                    throw std::runtime_error("Error parsing line 0 - index: " + std::to_string(jdx));
-                }
-                break;
-                // #1 foreground blur radius values, br1,br2, br1,br2,...  
-            case 1:
-                try {
-                    fg_dm_value = (uint8_t)std::stoi(params[idx][0]);
-                    fg_prob = std::stod(params[idx][1]);
+            std::ifstream tmp_stream(param_filename);
+            std::stringstream buffer;
+            buffer << tmp_stream.rdbuf();
+            std::string contents = buffer.str();
 
-                    for (jdx = 2; jdx < params[idx].size(); jdx += 2)
-                    {
-                        fg_br_table.push_back(std::make_pair((uint8_t)std::stoi(params[idx][jdx]), (uint8_t)std::stoi(params[idx][jdx + 1])));
-                    }
-                }
-                catch (...)
-                {
-                    throw std::runtime_error("Error parsing line 1 - index: " + std::to_string(jdx));
-                }
-                break;
-                // #2 ROI depthmap values 
-            case 2:
-                for (jdx = 0; jdx < params[idx].size(); ++jdx)
-                {
-                    dm_values.push_back((uint8_t)std::stoi(params[idx][jdx]));
-                }
-                break;
-                // #3 sigma values, the number of values should be greater than the number of depthmap values, DM values are used to index sigma values
-            case 3:
-                for (jdx = 0; jdx < params[idx].size(); ++jdx)
-                {
-                    sigma_table.push_back(std::stod(params[idx][jdx]));
-                }
-                break;
-                // #4 blur radius table 1, the number of values should match the number of depthmap values
-            case 4:
-                for (jdx = 0; jdx < params[idx].size(); ++jdx)
-                {
-                    br1_table.push_back((uint8_t)std::stod(params[idx][jdx]));
-                }
-                break;
-                // #5 blur radius table 2, the number of values should match the number of depthmap values
-            case 5:
-                for (jdx = 0; jdx < params[idx].size(); ++jdx)
-                {
-                    br2_table.push_back((uint8_t)std::stod(params[idx][jdx]));
-                }
-                break;
-                // #6 maximum number of depthmap values within a single image
-            case 6:
-                max_dm_vals_per_image = (int32_t)std::stoi(params[idx][0]);
-                break;
+            ryml::Tree config = ryml::parse_in_arena(ryml::to_csubstr(contents));
 
-                // #7 scaling parameters: pattern scale, shape sale
-            case 7:
-                try {
-                    pattern_scale = std::stod(params[idx][0]);
-                    shape_scale = std::stod(params[idx][1]);
-                }
-                catch(...)
-                {
-                    throw std::runtime_error("Error parsing line " + std::to_string(idx));
-                }
-                
-                // #8 final blur sigma index
-            case 8:
-                try {
-                    final_blur_index = (uint32_t)std::stoi(params[idx][0]);                
-                }
-                catch(...)
-                {
-                    throw std::runtime_error("Error parsing line " + std::to_string(idx));
-                }
+            // background: depthmap value, probablility, blur radius values
+            ryml::NodeRef background = config["background"];
+            background["value"] >> bg_dm_value;
+            background["probability"] >> bg_prob;
+            background["blur_radius1"] >> bg_table_br1;
+            background["blur_radius2"] >> bg_table_br2;
 
-                break;
+            vector_to_pair(bg_table_br1, bg_table_br2, bg_br_table);
 
-                // #9 turbulence parameters:
-            case 9:
-                try {
+            // foreground: depthmap value, probablility, blur radius values
+            ryml::NodeRef foreground = config["background"];
+            foreground["value"] >> fg_dm_value;
+            foreground["probability"] >> fg_prob;
+            foreground["blur_radius1"] >> fg_table_br1;
+            foreground["blur_radius2"] >> fg_table_br2;
 
-                }
-                catch (...)
-                {
-                    throw std::runtime_error("Error parsing line " + std::to_string(idx));
-                }
-                break;
+            vector_to_pair(fg_table_br1, fg_table_br2, fg_br_table);
 
-            default:
-                break;
-            }
+            // sigma values, the number of values should be greater than the number of depthmap values
+            sigma_table.clear();
+            config["sigma"] >> sigma_table;
+
+            // ROI depthmap values, blur radius table 1, blur radius table 2
+            dm_values.clear();
+            br1_table.clear();
+            br2_table.clear();
+            ryml::NodeRef roi = config["roi"];
+            roi["values"] >> dm_values;
+            roi["blur_radius1"] >> br1_table;
+            roi["blur_radius2"] >> br2_table;
+
+            // maximum number of depthmap values within a single image
+            config["max_dm_values"] >> max_dm_vals_per_image;
+
+            // scaling parameters: pattern scale, shape scale
+            ryml::NodeRef scaling_params = config["scaling_params"];
+            scaling_params["pattern_scale"] >> pattern_scale;
+            scaling_params["shape_scale"] >> shape_scale;
+
+            // final blur sigma index
+            config["final_blur_index"] >> final_blur_index;
+
         }
+        catch (std::exception &e)
+        {
+            throw std::runtime_error("Error parsing input file: " + std::string(e.what()));
+        }
+
+        // std::vector<std::vector<std::string>> params;
+        // parse_csv_file(param_filename, params);
 
         auto t = time(NULL);
         rng = cv::RNG(t);
@@ -259,6 +213,23 @@ private:
     // gaussian kernel size
     const uint32_t kernel_size = 69;
     //const uint32_t kernel_size = 512;
+
+    //-----------------------------------------------------------------------------
+    template<typename T>
+    inline void vector_to_pair(std::vector<T>& v1, std::vector<T>& v2, std::vector<std::pair<T, T>>& p1)
+    {
+        assert(v1.size() == v2.size());
+
+        uint64_t idx;
+
+        p1.clear();
+
+        for (idx = 0; idx < v1.size(); ++idx)
+        {
+            p1.push_back(std::make_pair(v1[idx], v2[idx]));
+        }
+
+    }   // end of vector_to_pair
 
     //-----------------------------------------------------------------------------
     // this function precomputes the blur kernels based on the input sigma table and the kerrnel size

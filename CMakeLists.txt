@@ -42,29 +42,36 @@ option(USE_AVX_INSTRUCTIONS  "Compile your program with AVX instructions"  ON)
 if(WIN32)
     if(${PLATFORM} STREQUAL "Laptop")
         set(COMMON_ROOT "D:/Common")
+        set(RYML_PATH "D:/Projects/rapidyaml")
     elseif(${PLATFORM} STREQUAL "LaptopN")
         set(COMMON_ROOT "C:/Projects/Common")
-    elseif(${PLATFORM} STREQUAL "BEAST")
-        set(COMMON_ROOT "E:/Projects/Common")
+        set(RYML_PATH "C:/Projects/rapidyaml")
     else()
-        set(COMMON_ROOT "D:/Projects/Common")
+        set(COMMON_ROOT "C:/Projects/Common")
+        set(RYML_PATH "C:/Projects/rapidyaml")
     endif()
+
+    set(RYML_LIB "${RYML_PATH}/build/Release/ryml.lib")
 
 else()
     set(HOME "$ENV{HOME}" CACHE INTERNAL "Copied from environment variable")
 
     if(${PLATFORM} STREQUAL "HPC")
         set(COMMON_ROOT "${HOME}/Projects/Common")
+        set(RYML_PATH "${HOME}/Projects/rapidyaml")
     elseif(${PLATFORM} STREQUAL "MainGear")
         set(COMMON_ROOT "${HOME}/Projects/Common")
+        set(RYML_PATH "${HOME}/Projects/rapidyaml")
     else()
         set(COMMON_ROOT "${HOME}/Projects/Common")
+        set(RYML_PATH "${HOME}/Projects/rapidyaml")
     endif()
+
+    set(RYML_LIB "${RYML_PATH}/build/libryml.so")
 
 endif()
 
 include(${COMMON_ROOT}/cmake_utils/use_sse_avx.cmake)
-
 
 
 # ----------------------------------------------------------------------------
@@ -73,8 +80,10 @@ file(GLOB SOURCES "src/*.cpp")
 
 set(project_includes "include" 
     "${COMMON_ROOT}/include"
+    "${RYML_PATH}/include"
     )
 
+set(project_libs ${project_libs} ${RYML_LIB})
 
 # ----------------------------------------------------------------------------
 # find OpenCV
