@@ -14,19 +14,14 @@
 
 #endif
 
-// ----------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 #ifdef __cplusplus
 extern "C" {
 #endif
+    //-----------------------------------------------------------------------------
     VS_GEN_LIB void init_vs_gen_from_file(const char* fn);
-#ifdef __cplusplus
-}
-#endif
 
-// ----------------------------------------------------------------------------------------
-#ifdef __cplusplus
-extern "C" {
-#endif
+    //-----------------------------------------------------------------------------
     VS_GEN_LIB void init_vs_generator(unsigned int sig_tbl_num,
         double* sigma_table_t,
         unsigned int blur_tbl_num,
@@ -43,60 +38,26 @@ extern "C" {
         unsigned short bg_dm_value_,
         int max_dm_vals_per_image_
     );
-#ifdef __cplusplus
-}
-#endif
 
-// ----------------------------------------------------------------------------------------
-#ifdef __cplusplus
-extern "C" {
-#endif
+    //-----------------------------------------------------------------------------
     VS_GEN_LIB void set_vs_seed(int seed);
-#ifdef __cplusplus
-}
-#endif
 
-// ----------------------------------------------------------------------------------------
-#ifdef __cplusplus
-extern "C" {
-#endif
+    //-----------------------------------------------------------------------------
     VS_GEN_LIB void get_vs_minmax(unsigned short* min_dm_value, unsigned short* max_dm_value);
-#ifdef __cplusplus
-}
-#endif
 
-// ----------------------------------------------------------------------------------------
-#ifdef __cplusplus
-extern "C" {
-#endif
+    //-----------------------------------------------------------------------------
     VS_GEN_LIB void set_vs_shape_scale(double s);
-#ifdef __cplusplus
-}
-#endif
 
-// ----------------------------------------------------------------------------------------
-#ifdef __cplusplus
-extern "C" {
-#endif
+    //-----------------------------------------------------------------------------
     VS_GEN_LIB double get_vs_shape_scale();
+
+    //-----------------------------------------------------------------------------
     VS_GEN_LIB double get_vs_pattern_scale();
-#ifdef __cplusplus
-}
-#endif
 
-// ----------------------------------------------------------------------------------------
-#ifdef __cplusplus
-extern "C" {
-#endif
+    //-----------------------------------------------------------------------------
     VS_GEN_LIB void set_vs_pattern_scale(double s);
-#ifdef __cplusplus
-}
-#endif
 
-// ----------------------------------------------------------------------------------------
-#ifdef __cplusplus
-extern "C" {
-#endif
+    //-----------------------------------------------------------------------------
     VS_GEN_LIB void generate_vs_scene(
         //double pattern_scale,
         //double shape_scale,
