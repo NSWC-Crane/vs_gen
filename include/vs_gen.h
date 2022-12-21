@@ -156,21 +156,14 @@ public:
 
             vector_to_pair(bg_table_br1, bg_table_br2, bg_br_table);
 
-            try
-            {
-                // foreground: depthmap value, probablility, blur radius values
-                ryml::NodeRef foreground = config["foreground"];
-                foreground["value"] >> fg_dm_value;
-                foreground["probability"] >> fg_prob;
-                foreground["blur_radius1"] >> fg_table_br1;
-                foreground["blur_radius2"] >> fg_table_br2;
+            // foreground: depthmap value, probablility, blur radius values
+            ryml::NodeRef foreground = config["foreground"];
+            foreground["value"] >> fg_dm_value;
+            foreground["probability"] >> fg_prob;
+            foreground["blur_radius1"] >> fg_table_br1;
+            foreground["blur_radius2"] >> fg_table_br2;
 
-                vector_to_pair(fg_table_br1, fg_table_br2, fg_br_table);
-            }
-            catch (std::exception& e)
-            {
-                std::cout << "error in parsing foreground: " << e.what() << std::endl;
-            }
+            vector_to_pair(fg_table_br1, fg_table_br2, fg_br_table);
 
             // sigma values, the number of values should be greater than the number of depthmap values
             sigma_table.clear();
