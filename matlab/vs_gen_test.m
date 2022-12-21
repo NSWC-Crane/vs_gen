@@ -31,7 +31,7 @@ if(~libisloaded(lib_name))
 end
 
 % show all the available functions and 
-libfunctionsview(lib_name);
+% libfunctionsview(lib_name);
 % pause(1);
 
 
@@ -57,7 +57,7 @@ dm_t = libpointer('uint8Ptr', dm);
 
 %%
 num_crops = 64;
-num_iterations = 90;
+num_iterations = 1;
 num_bins = 23;
 vs_scale = 0.1;
 shape_scale = 0.06;
@@ -69,8 +69,18 @@ for idx=1:num_iterations
         % generate the scene
         calllib(lib_name,'generate_vs_scene', img_w, img_h, img_f1_t, img_f2_t, dm_t);
 
+        img_f1 = cat(3, reshape(img_f1_t.Value(3:3:end), [img_h, img_w])', reshape(img_f1_t.Value(2:3:end), [img_h, img_w])', reshape(img_f1_t.Value(1:3:end), [img_h, img_w])');
+        img_f2 = cat(3, reshape(img_f2_t.Value(3:3:end), [img_h, img_w])', reshape(img_f2_t.Value(2:3:end), [img_h, img_w])', reshape(img_f2_t.Value(1:3:end), [img_h, img_w])');
         dm = reshape(dm_t.Value, [img_h, img_w])';
-        dm = dm(16:47, 16:47);
+%         dm = dm(16:47, 16:47);
+        
+        
+        montage = cat(2, img_f1, 255*ones(img_h,10,3), img_f2);
+        figure(100)
+        image(uint8(montage));
+        
+        figure(101)
+        imagesc(dm); colormap(gray(23));
         
         % get the counts of each depthmap value
         dm_hist = dm_hist + 8*histcounts(dm, num_bins);

@@ -10,7 +10,7 @@ background:
 # foreground: depthmap value, probablility, blur radius values - br1, br2, br1, br2,... 
 foreground:
     value: 0
-    probablility: 0.35
+    probability: 0.35
     blur_radius1: [13, 11, 10, 8, 7, 6, 4, 3, 2, 1]
     blur_radius2: [30, 29, 27, 26, 24, 23, 22, 21, 20, 18]
 
