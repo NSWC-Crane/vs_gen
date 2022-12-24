@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-#  Root CMake file for the Select ROI Library
+#  Root CMake file for the virtual scene generation library
 # ----------------------------------------------------------------------------
 #
 # To perform an out of source build do the following on the command line:
@@ -78,7 +78,8 @@ include(${COMMON_ROOT}/cmake_utils/use_sse_avx.cmake)
 # get the source files for the Library
 file(GLOB SOURCES "src/*.cpp")
 
-set(project_includes "include" 
+set(project_includes "include"
+    "${PR_ROOT}/common/include"
     "${COMMON_ROOT}/include"
     "${RYML_ROOT}/include"
     )

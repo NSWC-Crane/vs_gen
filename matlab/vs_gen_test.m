@@ -15,15 +15,15 @@ commandwindow;
 
 %% load the dll/so file
 
-lib_path = '../build/Release/';
+lib_path = '../vs_gen_lib/build/Release/';
 lib_name = 'vs_gen';
-hfile = 'vs_gen_lib.h';
+hfile = '../common/include/vs_gen_lib.h';
 
 fprintf('loading library: %s\n', strcat(lib_path, lib_name, '.dll'));
-fprintf('header file: %s\n', strcat('../include/', hfile));
+fprintf('header file: %s\n', hfile);
 
 if(~libisloaded(lib_name))
-    [notfound, warnings] = loadlibrary(strcat(lib_path, lib_name, '.dll'), strcat('../include/', hfile), 'mfilename', strcat('vs_gen_prototype_file'));
+    [notfound, warnings] = loadlibrary(strcat(lib_path, lib_name, '.dll'), hfile, 'mfilename', strcat('vs_gen_prototype_file'));
 end
 
 if(~libisloaded(lib_name))
