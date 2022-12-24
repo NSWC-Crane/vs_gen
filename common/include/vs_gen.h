@@ -212,7 +212,7 @@ public:
 private:
 
     // gaussian kernel size
-    const uint32_t kernel_size = 69;
+    const uint32_t kernel_size = 49;
     //const uint32_t kernel_size = 512;
 
     //-----------------------------------------------------------------------------

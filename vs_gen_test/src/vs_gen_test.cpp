@@ -137,22 +137,14 @@ int main(int argc, char** argv)
 
 #endif
         std::string input_filename = "../../blur_params_v23a.yml";
-        img_w = 128;
-        img_h = 128;
+        img_w = 64;
+        img_h = 64;
 
 
 #if defined(USE_LIB)
         init_vs_gen_from_file(input_filename.c_str());
 #else
-        std::vector<turbulence_param> Pv;
-        for (idx = 0; idx < 23; ++idx)
-        {
 
-            L = 10.0 * idx + 600.0;
-            pixel = turbulence_param::get_pixel_size(zoom, L);
-            obj_size = N * pixel;
-            Pv.push_back(turbulence_param(N, D, L, Cn2, wavelenth, obj_size));
-        }
 #endif
 
         //-----------------------------------------------------------------------------
