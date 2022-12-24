@@ -191,7 +191,7 @@ int main(int argc, char** argv)
             cv::hconcat(img_f1, img_f2, montage);
             //cv::hconcat(montage, dm_img, montage);
             cv::imshow(window_name, montage);
-            cv::imshow("Depth Map", dm_img);
+            cv::imshow("Depth Map", dm_img*10);
             key = cv::waitKey(50);
         }
         bp = 2;
