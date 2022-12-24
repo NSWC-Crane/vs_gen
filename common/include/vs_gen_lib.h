@@ -59,14 +59,13 @@ extern "C" {
 
     //-----------------------------------------------------------------------------
     VS_GEN_LIB void generate_vs_scene(
-        //double pattern_scale,
-        //double shape_scale,
         unsigned int img_w,
         unsigned int img_h, 
         unsigned char* img_f1_t, 
         unsigned char* img_f2_t, 
         unsigned char* dm_t
     );
+
 #ifdef __cplusplus
 }
 #endif
