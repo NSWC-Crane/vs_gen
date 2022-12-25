@@ -60,21 +60,15 @@ else()
 
     if(${PLATFORM} STREQUAL "HPC")
         set(COMMON_ROOT "${HOME}/Projects/Common")
-        set(RYML_ROOT "${HOME}/Projects/rapidyaml")
     elseif(${PLATFORM} STREQUAL "MainGear")
         set(COMMON_ROOT "${HOME}/Projects/Common")
-        set(RYML_ROOT "${HOME}/Projects/rapidyaml")
     else()
         set(COMMON_ROOT "${HOME}/Projects/Common")
-        set(RYML_ROOT "${HOME}/Projects/rapidyaml")
     endif()
-
-    set(RYML_LIB "${RYML_ROOT}/build/libryml.so")
 
 endif()
 
 include(${COMMON_ROOT}/cmake_utils/use_sse_avx.cmake)
-
 
 # ----------------------------------------------------------------------------
 # get the source files for the Library
@@ -83,7 +77,7 @@ file(GLOB SOURCES "src/*.cpp")
 set(project_includes "include"
     "${PR_ROOT}/common/include"
     "${COMMON_ROOT}/include"
-    "${RYML_ROOT}/include"
+    #"${RYML_ROOT}/include"
     )
 
 set(project_libs ${project_libs} ${RYML_LIB})
@@ -129,7 +123,7 @@ message("-----------------------------------------------------------------------
 message(" ")
 
 # ----------------------------------------------------------------------------
-message("Building Library...")
+message("Building Project...")
 
 include_directories(${project_includes})
 add_executable(${exe_name} ${SOURCES})
@@ -147,9 +141,7 @@ if(WIN32)
     endif()
     
 elseif(UNIX)
-#    target_link_libraries(${exe_name} ${project_libs} ${CMAKE_DL_LIBS})    
-    target_link_libraries(${exe_name} ${project_libs})    
-    #target_link_libraries(${exe_name} PRIVATE GSL::gsl GSL::gslcblas)
+    target_link_libraries(${exe_name} ${project_libs} ${CMAKE_DL_LIBS})
 
 endif()
 

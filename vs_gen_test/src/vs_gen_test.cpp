@@ -119,9 +119,9 @@ int main(int argc, char** argv)
 
     #else
         lib_filename = "../../vs_gen_lib/build/libvs_gen.so";
-        void* turb_lib = dlopen(lib_filename.c_str(), RTLD_NOW);
+        void* vs_gen_lib = dlopen(lib_filename.c_str(), RTLD_NOW);
 
-        if (turb_lib == NULL)
+        if (vs_gen_lib == NULL)
         {
             throw std::runtime_error("error loading library");
         }
