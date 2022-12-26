@@ -35,10 +35,13 @@
 #include <cv_blur_process.h>
 #include <cv_random_image_gen.h>
 #include <cv_create_gaussian_kernel.h>
-#include <cv_dft_conv.h>
+//#include <cv_dft_conv.h>
 //#include <blur_params.h>
 //#include <num2string.h>
 //#include <file_ops.h>
+
+#include <turbulence_param.h>
+#include <turbulence_sim.h>
 
 #include <vs_gen.h>
 #include <vs_gen_lib.h>

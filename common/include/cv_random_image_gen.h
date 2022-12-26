@@ -8,6 +8,7 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 
+//-----------------------------------------------------------------------------
 inline void generate_random_shape(cv::Mat& img,
     cv::RNG& rng,
     long nr,
@@ -107,7 +108,7 @@ inline void generate_random_shape(cv::Mat& img,
 }   // end of generate_random_shape
 
 
-// ----------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 void generate_random_image(
     cv::Mat& img,
     cv::RNG& rng,
@@ -143,7 +144,7 @@ void generate_random_image(
 
 }   // end of generate_random_image
 
-
+//-----------------------------------------------------------------------------
 void generate_random_image(unsigned char*& img,
     long long seed,
     long nr,

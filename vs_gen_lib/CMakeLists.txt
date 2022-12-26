@@ -42,12 +42,15 @@ option(USE_AVX_INSTRUCTIONS  "Compile your program with AVX instructions"  ON)
 if(WIN32)
     if(${PLATFORM} STREQUAL "Laptop")
         set(COMMON_ROOT "D:/Common")
+        set(TURB_ROOT "D:/Projects/turbulence_sim")
         set(RYML_ROOT "D:/Projects/rapidyaml")
     elseif(${PLATFORM} STREQUAL "LaptopN")
         set(COMMON_ROOT "C:/Projects/Common")
+        set(TURB_ROOT "C:/Projects/turbulence_sim")
         set(RYML_ROOT "C:/Projects/rapidyaml")
     else()
         set(COMMON_ROOT "C:/Projects/Common")
+        set(TURB_ROOT "C:/Projects/turbulence_sim")
         set(RYML_ROOT "C:/Projects/rapidyaml")
     endif()
 
@@ -58,12 +61,15 @@ else()
 
     if(${PLATFORM} STREQUAL "HPC")
         set(COMMON_ROOT "${HOME}/Projects/Common")
+        set(TURB_ROOT "${HOME}/Projects/turbulence_sim")
         set(RYML_ROOT "${HOME}/Projects/rapidyaml")
     elseif(${PLATFORM} STREQUAL "MainGear")
         set(COMMON_ROOT "${HOME}/Projects/Common")
+        set(TURB_ROOT "${HOME}/Projects/turbulence_sim")
         set(RYML_ROOT "${HOME}/Projects/rapidyaml")
     else()
         set(COMMON_ROOT "${HOME}/Projects/Common")
+        set(TURB_ROOT "${HOME}/Projects/turbulence_sim")
         set(RYML_ROOT "${HOME}/Projects/rapidyaml")
     endif()
 
@@ -80,6 +86,7 @@ file(GLOB SOURCES "src/*.cpp")
 
 set(project_includes "include"
     "${PR_ROOT}/common/include"
+    "${TURB_ROOT}/common/include"
     "${COMMON_ROOT}/include"
     "${RYML_ROOT}/include"
     )
