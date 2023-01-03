@@ -26,6 +26,9 @@
 
 #include <file_parser.h>
 
+#include <turbulence_param.h>
+#include <turbulence_sim.h>
+
 //-----------------------------------------------------------------------------
 bool compare(std::pair<uint8_t, uint8_t> p1, std::pair<uint8_t, uint8_t> p2)
 {
@@ -38,6 +41,9 @@ class vs_gen
 public:
 
     cv::RNG rng;
+
+    std::vector<turbulence_param> roi_tp;
+    std::vector<turbulence_param> fg_tp, bg_tp;
 
     //std::vector<uint16_t> dm_values;
     //std::vector<uint16_t> dm_indexes;
@@ -66,6 +72,8 @@ public:
     std::vector<uint8_t> br2_table;
     std::vector<std::pair<uint8_t, uint8_t>> bg_br_table;
     std::vector<std::pair<uint8_t, uint8_t>> fg_br_table;
+    std::vector<double> ranges;
+    std::vector<double> fg_ranges, bg_ranges;
 
     int32_t max_dm_vals_per_image;
 
@@ -133,6 +141,7 @@ public:
     inline void read_params(std::string param_filename)
     {
         //uint32_t idx = 0, jdx = 0;
+        std::string range_str;
 
         std::vector<uint8_t> bg_table_br1, bg_table_br2;
         std::vector<uint8_t> fg_table_br1, fg_table_br2;
@@ -153,6 +162,8 @@ public:
             background["probability"] >> bg_prob;
             background["blur_radius1"] >> bg_table_br1;
             background["blur_radius2"] >> bg_table_br2;
+            background["ranges"] >> range_str;
+            parse_input_range(range_str, bg_ranges);
 
             vector_to_pair(bg_table_br1, bg_table_br2, bg_br_table);
 
@@ -162,6 +173,8 @@ public:
             foreground["probability"] >> fg_prob;
             foreground["blur_radius1"] >> fg_table_br1;
             foreground["blur_radius2"] >> fg_table_br2;
+            foreground["ranges"] >> range_str;
+            parse_input_range(range_str, fg_ranges);
 
             vector_to_pair(fg_table_br1, fg_table_br2, fg_br_table);
 
@@ -177,6 +190,8 @@ public:
             roi["values"] >> dm_values;
             roi["blur_radius1"] >> br1_table;
             roi["blur_radius2"] >> br2_table;
+            roi["ranges"] >> range_str;
+            parse_input_range(range_str, ranges);
 
             // maximum number of depthmap values within a single image
             config["max_dm_values"] >> max_dm_vals_per_image;
@@ -189,10 +204,29 @@ public:
             // final blur sigma index
             config["final_blur_index"] >> final_blur_index;
 
+            ryml::NodeRef turb_params = config["turbulence_parameters"];
+            turb_params["aperature"] >> D;
+
+            //ryml::NodeRef range_params = turb_params["ranges"];
+            //double min_range, max_range, range_step;
+            //range_params["min"] >> min_range;
+            //range_params["max"] >> max_range;
+            //range_params["step"] >> range_step;
+
+            //generate_range(min_range, max_range, range_step, ranges);
+
+            ryml::NodeRef cn2_params = turb_params["Cn2"];
+            cn2_params["min"] >> min_cn2;
+            cn2_params["max"] >> max_cn2;
+
+            int bp = 1;
+
         }
         catch (std::exception &e)
         {
-            throw std::runtime_error("Error parsing input file: " + std::string(e.what()));
+            std::string error_string = "Error parsing input file: " + param_filename + " - " + std::string(e.what()) + "\n";
+            error_string += "File: " + std::string(__FILE__) + ", Line #: " + std::to_string(__LINE__);
+            throw std::runtime_error(error_string);
         }
 
         // std::vector<std::vector<std::string>> params;
@@ -208,12 +242,43 @@ public:
 
     }   // end of read_params
 
+    void init_turbulence_params(unsigned int N_)
+    {
+        uint32_t idx;
+        double Cn2 = rng.uniform(min_cn2, max_cn2);
+        double obj_size;// = N_ * turbulence_param::get_pixel_size(zoom, L);
+
+        for (idx = 0; idx < fg_ranges.size(); ++idx)
+        {
+            obj_size = N_* turbulence_param::get_pixel_size(zoom, fg_ranges[idx]);
+            fg_tp.push_back(turbulence_param(N_, D, fg_ranges[idx], Cn2, green_wvl, obj_size));
+        }
+        
+        for (idx = 0; idx < bg_ranges.size(); ++idx)
+        {
+            obj_size = N_ * turbulence_param::get_pixel_size(zoom, bg_ranges[idx]);
+            bg_tp.push_back(turbulence_param(N_, D, bg_ranges[idx], Cn2, green_wvl, obj_size));
+        }
+
+        for (idx = 0; idx < ranges.size(); ++idx)
+        {
+            obj_size = N_ * turbulence_param::get_pixel_size(zoom, ranges[idx]);
+            roi_tp.push_back(turbulence_param(N_, D, ranges[idx], Cn2, green_wvl, obj_size));
+        }
+        
+    }   // end of init_turbulence_params
+
 //-----------------------------------------------------------------------------
 private:
 
     // gaussian kernel size
     const uint32_t kernel_size = 49;
-    //const uint32_t kernel_size = 512;
+    double D;
+    double min_cn2, max_cn2;
+    const uint32_t zoom = 2000;
+    const double red_wvl = 525e-9;
+    const double green_wvl = 525e-9;
+    const double blue_wvl = 525e-9;
 
     //-----------------------------------------------------------------------------
     template<typename T>

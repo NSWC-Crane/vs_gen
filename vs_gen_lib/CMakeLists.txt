@@ -94,6 +94,14 @@ set(project_includes "include"
 set(project_libs ${project_libs} ${RYML_LIB})
 
 # ----------------------------------------------------------------------------
+# find GNU Scientific Library
+include("${TURB_ROOT}/common/cmake_utils/find_GSL.cmake")
+if(GSL_FOUND)
+    set(project_includes ${project_includes} ${GSL_INCLUDE_DIRS})
+    set(project_libs ${project_libs} ${GSL_LIBRARIES})
+endif() 
+
+# ----------------------------------------------------------------------------
 # find OpenCV
 find_package(OpenCV REQUIRED)
 if (OpenCV_FOUND)

@@ -100,18 +100,21 @@ int main(int argc, char** argv)
     try
     {    
 
-        std::cout << std::string(argv[0]) << std::endl;
+        // std::cout << std::string(argv[0]) << std::endl;
 
 #if defined(USE_LIB)
     // load in the library
     #if defined(_WIN32) | defined(__WIN32__) | defined(__WIN32) | defined(_WIN64) | defined(__WIN64)
-        lib_filename = "../../../vs_gen_lib/build/Release/vs_gen.dll";
-        //lib_filename = "D:/Projects/vs_gen/vs_gen_lib/build/Release/vs_gen.dll";
+        lib_filename = "../../../vs_gen_lib/build/Debug/vs_gen.dll";
+        //lib_filename = "D:/Projects/vs_gen/vs_gen_lib/build/Debug/vs_gen.dll";
+        
+        //HINSTANCE vs_gen_lib = LoadLibraryEx(lib_filename.c_str(), 0, DONT_RESOLVE_DLL_REFERENCES);
         HINSTANCE vs_gen_lib = LoadLibrary(lib_filename.c_str());
 
         if (vs_gen_lib == NULL)
         {
-            throw std::runtime_error("error loading library: " + std::string(__FILE__) + ", Line #: " + std::to_string(__LINE__));
+            int load_error = GetLastError();
+            throw std::runtime_error("error loading library - code: " + std::to_string(load_error) + " File: " + std::string(__FILE__) + ", Line #: " + std::to_string(__LINE__));
         }
 
         lib_init_vs_gen_from_file init_vs_gen_from_file = (lib_init_vs_gen_from_file)GetProcAddress(vs_gen_lib, "init_vs_gen_from_file");
