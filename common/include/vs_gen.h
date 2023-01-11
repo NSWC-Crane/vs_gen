@@ -25,9 +25,10 @@
 #include <opencv2/imgproc.hpp>
 
 #include <file_parser.h>
-
-#include <turbulence_param.h>
-#include <turbulence_sim.h>
+//
+//#include <lens_pixel_size.h>
+//#include <turbulence_param.h>
+//#include <turbulence_sim.h>
 
 //-----------------------------------------------------------------------------
 bool compare(std::pair<uint8_t, uint8_t> p1, std::pair<uint8_t, uint8_t> p2)
@@ -42,8 +43,8 @@ public:
 
     cv::RNG rng;
 
-    std::vector<turbulence_param> roi_tp;
-    std::vector<turbulence_param> fg_tp, bg_tp;
+    //std::vector<turbulence_param> roi_tp;
+    //std::vector<turbulence_param> fg_tp, bg_tp;
 
     //std::vector<uint16_t> dm_values;
     //std::vector<uint16_t> dm_indexes;
@@ -242,31 +243,31 @@ public:
 
     }   // end of read_params
 
-    void init_turbulence_params(unsigned int N_)
-    {
-        uint32_t idx;
-        double Cn2 = rng.uniform(min_cn2, max_cn2);
-        double obj_size;// = N_ * turbulence_param::get_pixel_size(zoom, L);
+    //void init_turbulence_params(unsigned int N_)
+    //{
+    //    uint32_t idx;
+    //    double Cn2 = rng.uniform(min_cn2, max_cn2);
+    //    double obj_size;// = N_ * turbulence_param::get_pixel_size(zoom, L);
 
-        for (idx = 0; idx < fg_ranges.size(); ++idx)
-        {
-            obj_size = N_* turbulence_param::get_pixel_size(zoom, fg_ranges[idx]);
-            fg_tp.push_back(turbulence_param(N_, D, fg_ranges[idx], Cn2, green_wvl, obj_size));
-        }
-        
-        for (idx = 0; idx < bg_ranges.size(); ++idx)
-        {
-            obj_size = N_ * turbulence_param::get_pixel_size(zoom, bg_ranges[idx]);
-            bg_tp.push_back(turbulence_param(N_, D, bg_ranges[idx], Cn2, green_wvl, obj_size));
-        }
+    //    for (idx = 0; idx < fg_ranges.size(); ++idx)
+    //    {
+    //        obj_size = N_* get_pixel_size(zoom, fg_ranges[idx]);
+    //        fg_tp.push_back(turbulence_param(N_, D, fg_ranges[idx], Cn2, green_wvl, obj_size));
+    //    }
+    //    
+    //    for (idx = 0; idx < bg_ranges.size(); ++idx)
+    //    {
+    //        obj_size = N_ * get_pixel_size(zoom, bg_ranges[idx]);
+    //        bg_tp.push_back(turbulence_param(N_, D, bg_ranges[idx], Cn2, green_wvl, obj_size));
+    //    }
 
-        for (idx = 0; idx < ranges.size(); ++idx)
-        {
-            obj_size = N_ * turbulence_param::get_pixel_size(zoom, ranges[idx]);
-            roi_tp.push_back(turbulence_param(N_, D, ranges[idx], Cn2, green_wvl, obj_size));
-        }
-        
-    }   // end of init_turbulence_params
+    //    for (idx = 0; idx < ranges.size(); ++idx)
+    //    {
+    //        obj_size = N_ * get_pixel_size(zoom, ranges[idx]);
+    //        roi_tp.push_back(turbulence_param(N_, D, ranges[idx], Cn2, green_wvl, obj_size));
+    //    }
+    //    
+    //}   // end of init_turbulence_params
 
 //-----------------------------------------------------------------------------
 private:
