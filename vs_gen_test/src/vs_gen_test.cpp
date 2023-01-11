@@ -96,6 +96,10 @@ int main(int argc, char** argv)
     cv::namedWindow(window_name, cv::WINDOW_NORMAL);
     //cv::resizeWindow(window_name, 2*img_w, img_h);
 
+    std::vector<int32_t> compression_params;
+    compression_params.push_back(cv::IMWRITE_PNG_COMPRESSION);
+    compression_params.push_back(2);
+
     // do work here
     try
     {    
@@ -105,7 +109,7 @@ int main(int argc, char** argv)
 #if defined(USE_LIB)
     // load in the library
     #if defined(_WIN32) | defined(__WIN32__) | defined(__WIN32) | defined(_WIN64) | defined(__WIN64)
-        lib_filename = "../../../vs_gen_lib/build/Debug/vs_gen.dll";
+        lib_filename = "../../../vs_gen_lib/build/Release/vs_gen.dll";
         //lib_filename = "D:/Projects/vs_gen/vs_gen_lib/build/Debug/vs_gen.dll";
         
         //HINSTANCE vs_gen_lib = LoadLibraryEx(lib_filename.c_str(), 0, DONT_RESOLVE_DLL_REFERENCES);
@@ -140,8 +144,8 @@ int main(int argc, char** argv)
 
 #endif
         std::string input_filename = "../../blur_params_v23a.yml";
-        img_w = 64;
-        img_h = 64;
+        img_w = 512;
+        img_h = 512;
 
 
 #if defined(USE_LIB)
@@ -190,6 +194,10 @@ int main(int argc, char** argv)
             key = cv::waitKey(50);
         }
         bp = 2;
+
+        cv::imwrite("test_image_fp1.png", img_f1, compression_params);
+        cv::imwrite("test_image_fp2.png", img_f2, compression_params);
+        cv::imwrite("test_image_dm.png", dm_img, compression_params);
 
     }
     catch(std::exception& e)

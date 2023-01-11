@@ -43,8 +43,8 @@ calllib(lib_name,'init_vs_gen_from_file', '../blur_params_v23a.yml');
 %calllib(lib_name,'set_vs_seed', 3851);
 
 % void generate_vs_scene(double scale, unsigned int img_w, unsigned int img_h, unsigned char* img_f1_t,  unsigned char* img_f2_t, unsigned char* dm_t);
-img_w = uint32(128);
-img_h = uint32(128);
+img_w = uint32(512);
+img_h = uint32(512);
 img_f1 = uint8(zeros(img_h * img_w * 3, 1));
 img_f2 = uint8(zeros(img_h * img_w * 3, 1));
 dm = uint8(zeros(img_h * img_w, 1));
@@ -56,7 +56,7 @@ dm_t = libpointer('uint8Ptr', dm);
 
 
 %%
-num_crops = 64;
+num_crops = 1;
 num_iterations = 1;
 num_bins = 23;
 vs_scale = 0.1;
