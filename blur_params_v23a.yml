@@ -33,7 +33,8 @@ max_dm_values: 10
 # scaling parameters: pattern scale, shape scale
 scaling_params:
     pattern_scale: 0.1
-    shape_scale: 0.04
+    #shape_scale: 0.04  
+    shape_scale: 0.1
 
 # final blur sigma index
 final_blur_index: 2
