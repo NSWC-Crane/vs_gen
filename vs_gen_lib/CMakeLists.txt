@@ -54,6 +54,7 @@ if(WIN32)
         set(RYML_ROOT "C:/Projects/rapidyaml")
     endif()
 
+    set(TURB_LIB "${TURB_ROOT}/turb_sim_lib/build/Release/turb_sim.lib")
     set(RYML_LIB "${RYML_ROOT}/build/Release/ryml.lib")
 
 else()
@@ -73,6 +74,7 @@ else()
         set(RYML_ROOT "${HOME}/Projects/rapidyaml")
     endif()
 
+    set(TURB_LIB "${TURB_ROOT}/turb_sim_lib/build/turb_sim.so")
     set(RYML_LIB "${RYML_ROOT}/build/libryml.so")
 
 endif()
@@ -91,7 +93,10 @@ set(project_includes "include"
     "${RYML_ROOT}/include"
     )
 
-set(project_libs ${project_libs} ${RYML_LIB})
+set(project_libs ${project_libs} 
+    ${RYML_LIB}
+    ${TURB_LIB}
+    )
 
 # ----------------------------------------------------------------------------
 # find GNU Scientific Library

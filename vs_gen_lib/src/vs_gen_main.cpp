@@ -43,6 +43,8 @@
 //#include <turbulence_param.h>
 //#include <turbulence_sim.h>
 
+#include <turb_sim_lib.h>
+
 #include <vs_gen.h>
 #include <vs_gen_lib.h>
 
@@ -227,12 +229,15 @@ void generate_vs_scene(
     //    break;
     }
 
-    // apply the first turbulence here to img_f1
+    // clone the images
+    img_f2 = img_f1.clone();
+
+    // apply the first turbulence here to img_f1 & img_f2
+    apply_rgb_turbulence(img_w, img_h, double* img_, double* turb_img_);
     //generate_tilt_image(img_f1, tp_indexes[0], vs.rng, img_f1);
     //generate_blur_image(img_f1, tp_indexes[0], vs.rng, img_f1);
 
-    // clone the images
-    img_f2 = img_f1.clone();
+
 
     //cv::Mat img_f1_t = img_f1.clone();
     //cv::Mat dst;
