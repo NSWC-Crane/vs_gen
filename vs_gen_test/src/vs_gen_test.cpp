@@ -118,9 +118,12 @@ int main(int argc, char** argv)
 #if defined(USE_LIB)
     // load in the library
     #if defined(_WIN32) | defined(__WIN32__) | defined(__WIN32) | defined(_WIN64) | defined(__WIN64)
+#if defined(_DEBUG)
+        lib_filename = "../../../vs_gen/vs_gen_lib/build/Debug/vs_gen.dll";
+#else
         lib_filename = "../../../vs_gen_lib/build/Release/vs_gen.dll";
-        //lib_filename = "D:/Projects/vs_gen/vs_gen_lib/build/Debug/vs_gen.dll";
-        
+#endif
+
         //HINSTANCE vs_gen_lib = LoadLibraryEx(lib_filename.c_str(), 0, DONT_RESOLVE_DLL_REFERENCES);
         HINSTANCE vs_gen_lib = LoadLibrary(lib_filename.c_str());
 
