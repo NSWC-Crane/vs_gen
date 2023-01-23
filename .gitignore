@@ -294,7 +294,7 @@ nbproject/
 *.mcw
 
 ## general
-[Rr]esults*/
+#[Rr]esults*/
 
 out/
 .vs/

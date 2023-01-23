@@ -15,6 +15,7 @@ typedef void* HINSTANCE;
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <sstream>
 #include <fstream>
 #include <iomanip>
 #include <chrono>
@@ -92,6 +93,14 @@ int main(int argc, char** argv)
 
     std::string lib_filename;
 
+    std::string image_num;
+    std::string fp1_image, fp2_image, dm_image;
+    uint32_t num_images;
+
+    std::ofstream data_log_stream;
+    std::string log_filename = "../results/tb23a_input.txt";
+
+
     // setup the windows to display the results
     cv::namedWindow(window_name, cv::WINDOW_NORMAL);
     //cv::resizeWindow(window_name, 2*img_w, img_h);
@@ -147,12 +156,17 @@ int main(int argc, char** argv)
         img_w = 512;
         img_h = 512;
 
+        num_images = 450;
 
 #if defined(USE_LIB)
         init_vs_gen_from_file(input_filename.c_str());
 #else
 
 #endif
+        data_log_stream.open((log_filename), std::ios::out);
+
+        // Add the date and time to the start of the log file
+        data_log_stream << std::endl << "#------------------------------------------------------------------------------" << std::endl;
 
         //-----------------------------------------------------------------------------
         cv::Mat img_tilt;
@@ -163,7 +177,8 @@ int main(int argc, char** argv)
         char key = 0;
         //cv::resizeWindow(window_name, 4*N, 2*N);
 
-        while(key != 'q')
+        //while(key != 'q')
+        for(idx = 0; idx < num_images; ++idx)
         {
             start_time = std::chrono::system_clock::now();
 
@@ -173,32 +188,40 @@ int main(int argc, char** argv)
             generate_vs_scene(img_w, img_h, img_f1.ptr<uint8_t>(0), img_f2.ptr<uint8_t>(0), dm_img.ptr<uint8_t>(0));
 
 #else
-            generate_tilt_image(img, Pv[0], rng, img_tilt);
-            generate_blur_image(img_tilt, Pv[0], rng, img_blur);
+            //generate_tilt_image(img, Pv[0], rng, img_tilt);
+            //generate_blur_image(img_tilt, Pv[0], rng, img_blur);
 
-            generate_tilt_image(img, Pv[22], rng, img_tilt);
-            generate_blur_image(img_tilt, Pv[22], rng, img_blur2);
+            //generate_tilt_image(img, Pv[22], rng, img_tilt);
+            //generate_blur_image(img_tilt, Pv[22], rng, img_blur2);
 #endif
 
             //img_blur.convertTo(img_blur, CV_8UC1);
 
             stop_time = std::chrono::system_clock::now();
             elapsed_time = std::chrono::duration_cast<d_sec>(stop_time - start_time);
+            
 
-            std::cout << "time (s): " << elapsed_time.count() << std::endl;
-
-            cv::hconcat(img_f1, img_f2, montage);
+            //cv::hconcat(img_f1, img_f2, montage);
             //cv::hconcat(montage, dm_img, montage);
-            cv::imshow(window_name, montage);
-            cv::imshow("Depth Map", dm_img*10);
-            key = cv::waitKey(50);
+            //cv::imshow(window_name, montage);
+            //cv::imshow("Depth Map", dm_img*10);
+            //key = cv::waitKey(50);
+
+            image_num = num2str(idx, "%04d");
+            std::cout << image_num + " time (s): " << elapsed_time.count() << std::endl;
+
+            fp1_image = "images/test_image_fp1_" + image_num + ".png";
+            fp2_image = "images/test_image_fp2_" + image_num + ".png";
+            dm_image = "depth_maps/test_image_dm_" + image_num + ".png";
+
+            cv::imwrite("../results/" + fp1_image, img_f1, compression_params);
+            cv::imwrite("../results/" + fp2_image, img_f2, compression_params);
+            cv::imwrite("../results/" + dm_image, dm_img, compression_params);
+
+            data_log_stream << fp1_image + ", " + fp2_image + ", " + dm_image << std::endl;
         }
         bp = 2;
-
-        cv::imwrite("test_image_fp1.png", img_f1, compression_params);
-        cv::imwrite("test_image_fp2.png", img_f2, compression_params);
-        cv::imwrite("test_image_dm.png", dm_img, compression_params);
-
+        
     }
     catch(std::exception& e)
     {
