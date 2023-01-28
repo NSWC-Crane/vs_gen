@@ -23,9 +23,9 @@ inline void blur_layer(cv::Mat& input_img,
 )
 {
     cv::Mat L1_1, L1_2;
-    input_img.convertTo(input_img, CV_32FC3);
-    output_img.convertTo(output_img, CV_32FC3);
-    mask.convertTo(mask, CV_32FC3);
+    //input_img.convertTo(input_img, CV_32FC3);
+    //output_img.convertTo(output_img, CV_32FC3);
+    //mask.convertTo(mask, CV_32FC3);
 
     // blur the src_clone image with the overlay and blur the mask image
     cv::filter2D(input_img, L1_1, -1, kernel, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
@@ -39,7 +39,7 @@ inline void blur_layer(cv::Mat& input_img,
     // set src equal to L1_1 + L1_2
     cv::add(L1_1, L1_2, output_img);
 
-    output_img.convertTo(output_img, CV_8UC3);
+    //output_img.convertTo(output_img, CV_8UC3);
 
 }   // end of blur_layer 
 
@@ -89,7 +89,7 @@ void generate_random_mask(cv::Mat& output_mask,
     int nc = img_size.height;
 
     // create the image with a black background color
-    output_mask = cv::Mat(nr, nc, CV_8UC3, cv::Scalar::all(0));
+    output_mask = cv::Mat(nr, nc, CV_64FC3, cv::Scalar::all(0));
 
     // create N shapes
     for (idx = 0; idx < num_shapes; ++idx)
@@ -128,8 +128,10 @@ void generate_random_overlay(cv::Mat random_img, //cv::Size img_size,
 void overlay_depthmap(cv::Mat &depth_map, cv::Mat mask, uint16_t dm_value)
 {
     cv::Mat bg_mask;
+
+    mask.convertTo(mask, CV_8UC3);
     
-    cv::cvtColor(mask, mask, cv::COLOR_BGR2GRAY); 
+    cv::cvtColor(mask, mask, cv::COLOR_BGR2GRAY);
 
     // set bg_mask = 1 - mask
     cv::subtract(cv::Scalar(1), mask, bg_mask);

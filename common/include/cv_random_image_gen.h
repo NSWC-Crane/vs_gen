@@ -124,7 +124,7 @@ void generate_random_image(
     cv::Scalar bg_color = cv::Scalar(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));
 
     // create the image with the random background color
-    img = cv::Mat(nr, nc, CV_8UC3, bg_color);
+    img = cv::Mat(nr, nc, CV_64FC3, bg_color);
 
     // create N shapes
     for (idx = 0; idx < N; ++idx)
