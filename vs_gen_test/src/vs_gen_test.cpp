@@ -119,7 +119,7 @@ int main(int argc, char** argv)
     // load in the library
     #if defined(_WIN32) | defined(__WIN32__) | defined(__WIN32) | defined(_WIN64) | defined(__WIN64)
 #if defined(_DEBUG)
-        lib_filename = "../../../vs_gen/vs_gen_lib/build/Debug/vs_gen.dll";
+        lib_filename = "../../vs_gen_lib/build/Debug/vs_gen.dll";
 #else
         lib_filename = "../../../vs_gen_lib/build/Release/vs_gen.dll";
 #endif
@@ -159,7 +159,7 @@ int main(int argc, char** argv)
         img_w = 512;
         img_h = 512;
 
-        num_images = 450;
+        num_images = 1;
 
 #if defined(USE_LIB)
         init_vs_gen_from_file(input_filename.c_str());
@@ -204,11 +204,11 @@ int main(int argc, char** argv)
             elapsed_time = std::chrono::duration_cast<d_sec>(stop_time - start_time);
             
 
-            //cv::hconcat(img_f1, img_f2, montage);
+            cv::hconcat(img_f1, img_f2, montage);
             //cv::hconcat(montage, dm_img, montage);
-            //cv::imshow(window_name, montage);
-            //cv::imshow("Depth Map", dm_img*10);
-            //key = cv::waitKey(50);
+            cv::imshow(window_name, montage);
+            cv::imshow("Depth Map", dm_img*10);
+            key = cv::waitKey(0);
 
             image_num = num2str(idx, "%04d");
             std::cout << image_num + " time (s): " << elapsed_time.count() << std::endl;
@@ -217,9 +217,9 @@ int main(int argc, char** argv)
             fp2_image = "images/test_image_fp2_" + image_num + ".png";
             dm_image = "depth_maps/test_image_dm_" + image_num + ".png";
 
-            cv::imwrite("../results/" + fp1_image, img_f1, compression_params);
-            cv::imwrite("../results/" + fp2_image, img_f2, compression_params);
-            cv::imwrite("../results/" + dm_image, dm_img, compression_params);
+            //cv::imwrite("../results/" + fp1_image, img_f1, compression_params);
+            //cv::imwrite("../results/" + fp2_image, img_f2, compression_params);
+            //cv::imwrite("../results/" + dm_image, dm_img, compression_params);
 
             data_log_stream << fp1_image + ", " + fp2_image + ", " + dm_image << std::endl;
         }
@@ -232,9 +232,9 @@ int main(int argc, char** argv)
         std::cout << "Filename: " << __FILE__ << ", Line #: " << __LINE__ << std::endl;
     }
 
-    cv::destroyAllWindows();
     std::cout << std::endl << "End of Program.  Press Enter to close..." << std::endl;
 	std::cin.ignore();
+    cv::destroyAllWindows();
 
 }   // end of main
 

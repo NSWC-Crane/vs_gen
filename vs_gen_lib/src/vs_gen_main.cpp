@@ -136,6 +136,7 @@ void generate_vs_scene(
     int32_t min_N, max_N;
     uint8_t dataset_type = 0;
     double shape_scale;
+    double obj_size;
 
     std::vector<uint8_t> tmp_br1_table, tmp_br2_table;
     std::vector<uint16_t> dm_vals;
@@ -183,6 +184,9 @@ void generate_vs_scene(
 
         dm_vals.push_back(vs.bg_dm_value);
         //tp_indexes.push_back(vs.bg_tp[dm]);
+
+        obj_size = img_w * get_pixel_size(vs.zoom, vs.bg_ranges[dm]);
+        add_turbulence_param(img_w, vs.get_aperature(), vs.bg_ranges[dm], vs.get_cn2(), obj_size);
     }
 
     // fill in the tables for the region of interest depthmap values
@@ -192,6 +196,9 @@ void generate_vs_scene(
         tmp_br2_table.push_back(vs.br2_table[dm_indexes[idx]]);
         dm_vals.push_back(vs.dm_values[dm_indexes[idx]]);
         //tp_indexes.push_back(vs.roi_tp[dm_indexes[idx]]);
+
+        obj_size = img_w * get_pixel_size(vs.zoom, vs.ranges[dm_indexes[idx]]);
+        add_turbulence_param(img_w, vs.get_aperature(), vs.ranges[dm_indexes[idx]], vs.get_cn2(), obj_size);
     }
 
     // check the foreground probability and fill in the tables
@@ -203,6 +210,8 @@ void generate_vs_scene(
 
         dm_vals.push_back(vs.fg_dm_value);
         //tp_indexes.push_back(vs.fg_tp[dm]);
+        obj_size = img_w * get_pixel_size(vs.zoom, vs.fg_ranges[dm]);
+        add_turbulence_param(img_w, vs.get_aperature(), vs.fg_ranges[dm], vs.get_cn2(), obj_size);
     }
 
     //N = (uint32_t)(img_h * img_w * 0.001);
@@ -229,15 +238,14 @@ void generate_vs_scene(
     //    break;
     }
 
+    //img_f1.convertTo(img_f1, CV_64FC3);
+    
     // clone the images
     img_f2 = img_f1.clone();
 
     // apply the first turbulence here to img_f1 & img_f2
-    apply_rgb_turbulence(img_w, img_h, double* img_, double* turb_img_);
-    //generate_tilt_image(img_f1, tp_indexes[0], vs.rng, img_f1);
-    //generate_blur_image(img_f1, tp_indexes[0], vs.rng, img_f1);
-
-
+    apply_rgb_turbulence(0, img_w, img_h, img_f1.ptr<double>(0), img_f1.ptr<double>(0));
+    apply_rgb_turbulence(0, img_w, img_h, img_f2.ptr<double>(0), img_f2.ptr<double>(0));
 
     //cv::Mat img_f1_t = img_f1.clone();
     //cv::Mat dst;
@@ -287,8 +295,8 @@ void generate_vs_scene(
         }
 
         // this is where we should apply the turbulence to random_img
-        //generate_tilt_image(img_f1, tp_indexes[0], vs.rng, img_f1);
-        //generate_blur_image(img_f1, tp_indexes[0], vs.rng, img_f1);
+        apply_rgb_turbulence(idx, img_w, img_h, f1_layer.ptr<double>(0), f1_layer.ptr<double>(0));
+        apply_rgb_turbulence(idx, img_w, img_h, f2_layer.ptr<double>(0), f2_layer.ptr<double>(0));
 
         // generate random overlay
         generate_random_overlay(random_img, vs.rng, output_img, mask, N, shape_scale);
@@ -310,12 +318,12 @@ void generate_vs_scene(
     //cv::filter2D(img_f1, img_f1, -1, vs.blur_kernels[vs.final_blur_index], cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
     //cv::filter2D(img_f2, img_f2, -1, vs.blur_kernels[vs.final_blur_index], cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
 
+    img_f1.convertTo(img_f1, CV_8UC3);
+    img_f2.convertTo(img_f2, CV_8UC3);
+
     std::copy(img_f1.data, img_f1.data + (img_w * img_h * 3), img_f1_t);
     std::copy(img_f2.data, img_f2.data + (img_w * img_h * 3), img_f2_t);
     std::copy(dm.data, dm.data + (img_w * img_h), dm_t);
-    //img_f1_t = img_f1.data;
-    //img_f2_t = img_f2.data;
-    //dm_t = dm.data;
 
 }   // end of generate_scene
 

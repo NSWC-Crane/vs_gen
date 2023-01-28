@@ -25,10 +25,10 @@
 #include <opencv2/imgproc.hpp>
 
 #include <file_parser.h>
-//
-//#include <lens_pixel_size.h>
-//#include <turbulence_param.h>
-//#include <turbulence_sim.h>
+
+#include <lens_pixel_size.h>
+#include <turbulence_param.h>
+#include <turbulence_sim.h>
 
 //-----------------------------------------------------------------------------
 bool compare(std::pair<uint8_t, uint8_t> p1, std::pair<uint8_t, uint8_t> p2)
@@ -55,6 +55,7 @@ public:
     double shape_scale;
 
     uint32_t BN = 1000;
+    const uint32_t zoom = 2000;
 
     //std::pair<uint16_t, double> bg_dm;
     //std::pair<uint16_t, double> fg_dm;
@@ -86,6 +87,9 @@ public:
     {
 
     }
+
+    //-----------------------------------------------------------------------------
+    inline double get_aperature() { return D; }
 
     //-----------------------------------------------------------------------------
     inline void init(uint32_t sig_tbl_num,
@@ -206,7 +210,8 @@ public:
             config["final_blur_index"] >> final_blur_index;
 
             ryml::NodeRef turb_params = config["turbulence_parameters"];
-            turb_params["aperature"] >> D;
+            turb_params["num_images"] >> num_turb_images;
+            turb_params["aperture"] >> D;
 
             //ryml::NodeRef range_params = turb_params["ranges"];
             //double min_range, max_range, range_step;
@@ -243,31 +248,47 @@ public:
 
     }   // end of read_params
 
-    //void init_turbulence_params(unsigned int N_)
-    //{
-    //    uint32_t idx;
-    //    double Cn2 = rng.uniform(min_cn2, max_cn2);
-    //    double obj_size;// = N_ * turbulence_param::get_pixel_size(zoom, L);
+    //-----------------------------------------------------------------------------
+    // generate random Cn2 value
+    inline double get_cn2() { return rng.uniform(min_cn2, max_cn2); }
 
-    //    for (idx = 0; idx < fg_ranges.size(); ++idx)
-    //    {
-    //        obj_size = N_* get_pixel_size(zoom, fg_ranges[idx]);
-    //        fg_tp.push_back(turbulence_param(N_, D, fg_ranges[idx], Cn2, green_wvl, obj_size));
-    //    }
-    //    
-    //    for (idx = 0; idx < bg_ranges.size(); ++idx)
-    //    {
-    //        obj_size = N_ * get_pixel_size(zoom, bg_ranges[idx]);
-    //        bg_tp.push_back(turbulence_param(N_, D, bg_ranges[idx], Cn2, green_wvl, obj_size));
-    //    }
+    //-----------------------------------------------------------------------------
+    void init_turbulence_params(unsigned int N, double Cn2, double range)
+    {
+        uint32_t idx;
+        char use_color = 1; // true
+        //double Cn2 = rng.uniform(min_cn2, max_cn2);
+        double obj_size = get_pixel_size(zoom, range);
 
-    //    for (idx = 0; idx < ranges.size(); ++idx)
-    //    {
-    //        obj_size = N_ * get_pixel_size(zoom, ranges[idx]);
-    //        roi_tp.push_back(turbulence_param(N_, D, ranges[idx], Cn2, green_wvl, obj_size));
-    //    }
-    //    
-    //}   // end of init_turbulence_params
+        // initialize the turbulence parameters from background to roi to forground in reverse order to mtach the scene generation buildup
+        //init_turbulence_generator(N, D, range, Cn2, obj_size, use_color);
+
+
+        //void add_turbulence_param(unsigned int N_, double D_, double L_, double Cn2_, double obj_size_)
+
+        //for (idx = 0; idx < fg_ranges.size(); ++idx)
+        //{
+        //    obj_size = N_* get_pixel_size(zoom, fg_ranges[idx]);
+        //    fg_tp.push_back(turbulence_param(N_, D, fg_ranges[idx], Cn2, green_wvl, obj_size));
+        //}
+        //
+        //for (idx = 0; idx < bg_ranges.size(); ++idx)
+        //{
+        //    obj_size = N_ * get_pixel_size(zoom, bg_ranges[idx]);
+        //    bg_tp.push_back(turbulence_param(N_, D, bg_ranges[idx], Cn2, green_wvl, obj_size));
+        //}
+
+        //for (idx = 0; idx < ranges.size(); ++idx)
+        //{
+        //    obj_size = N_ * get_pixel_size(zoom, ranges[idx]);
+        //    roi_tp.push_back(turbulence_param(N_, D, ranges[idx], Cn2, green_wvl, obj_size));
+        //}
+        //
+    }   // end of init_turbulence_params
+
+    //-----------------------------------------------------------------------------
+    // print out the parameters
+
 
 //-----------------------------------------------------------------------------
 private:
@@ -276,7 +297,8 @@ private:
     const uint32_t kernel_size = 49;
     double D;
     double min_cn2, max_cn2;
-    const uint32_t zoom = 2000;
+    uint32_t num_turb_images;
+    
     const double red_wvl = 525e-9;
     const double green_wvl = 525e-9;
     const double blue_wvl = 525e-9;
