@@ -41,14 +41,15 @@ final_blur_index: 2
 
 # turbulence parameters: aperture (m), range (m), Cn2 (m^(-2/3))
 turbulence_parameters:
-    aperature: 0.095
+    num_images: 20
+    aperture: 0.095
     #ranges:
     #    min: 600
     #    max: 800
     #    step: 10
     Cn2:
-        min: 1e-15
-        max: 8e-14
+        min: 8e-14
+        max: 9e-14
 
 # dataset type: 0 -> random image, 1 -> other, 2-> knife edge
 #1
