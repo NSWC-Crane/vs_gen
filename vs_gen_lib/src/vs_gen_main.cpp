@@ -145,6 +145,12 @@ void generate_vs_scene(
 
     cv::Mat random_img, output_img, mask;
     cv::Mat f1_layer, f2_layer;
+    std::vector<double> psf_t(img_w * img_h, 0);
+    uint32_t psf_w = 0, psf_h = 0;
+    cv::Mat psf;
+    char use_color = 1;
+    size_t turb_seed;
+
     //double mask_scale = 1.339286e-4 * std::max(img_w, img_h) + 0.061429;
     //double shape_scale = -0.000000203451 * std::max(img_w, img_h) * std::max(img_w, img_h) + 0.000429687500 * std::max(img_w, img_h) + 0.043333333333;
     //shape_scale = 0.65;
@@ -155,6 +161,13 @@ void generate_vs_scene(
     cv::Mat img_f2 = cv::Mat(img_h, img_w, CV_8UC3, img_f2_t);
     cv::Mat dm = cv::Mat(img_h, img_w, CV_8UC1, dm_t);
     //cv::Size img_size(img_h, img_w);
+    cv::Mat f1_mask_layer = cv::Mat::zeros(img_h, img_w, CV_64FC3); 
+    cv::Mat f2_mask_layer = cv::Mat::zeros(img_h, img_w, CV_64FC3);
+    cv::Mat f1_out_layer = cv::Mat::zeros(img_h, img_w, CV_64FC3);
+    cv::Mat f2_out_layer = cv::Mat::zeros(img_h, img_w, CV_64FC3);
+
+    // initialize the turbulence generator
+    init_turbulence_generator(use_color);
 
     // generate random dm_values that include the foreground and background values
     int32_t tmp_dm_num = vs.max_dm_vals_per_image;
@@ -165,6 +178,9 @@ void generate_vs_scene(
 
     // get the probability that the foreground depthmap value will be used
     double fg_x = vs.rng.uniform(0.0, 1.0);
+
+    // get a random Cn2 value to use for the scene
+    double Cn2 = vs.get_cn2();
 
     if (bg_x < vs.bg_prob)
         tmp_dm_num--;
@@ -186,7 +202,7 @@ void generate_vs_scene(
         //tp_indexes.push_back(vs.bg_tp[dm]);
 
         obj_size = img_w * get_pixel_size(vs.zoom, vs.bg_ranges[dm]);
-        add_turbulence_param(img_w, vs.get_aperature(), vs.bg_ranges[dm], vs.get_cn2(), obj_size);
+        add_turbulence_param(img_w, vs.get_aperature(), vs.bg_ranges[dm], Cn2, obj_size);
     }
 
     // fill in the tables for the region of interest depthmap values
@@ -198,7 +214,7 @@ void generate_vs_scene(
         //tp_indexes.push_back(vs.roi_tp[dm_indexes[idx]]);
 
         obj_size = img_w * get_pixel_size(vs.zoom, vs.ranges[dm_indexes[idx]]);
-        add_turbulence_param(img_w, vs.get_aperature(), vs.ranges[dm_indexes[idx]], vs.get_cn2(), obj_size);
+        add_turbulence_param(img_w, vs.get_aperature(), vs.ranges[dm_indexes[idx]], Cn2, obj_size);
     }
 
     // check the foreground probability and fill in the tables
@@ -211,7 +227,7 @@ void generate_vs_scene(
         dm_vals.push_back(vs.fg_dm_value);
         //tp_indexes.push_back(vs.fg_tp[dm]);
         obj_size = img_w * get_pixel_size(vs.zoom, vs.fg_ranges[dm]);
-        add_turbulence_param(img_w, vs.get_aperature(), vs.fg_ranges[dm], vs.get_cn2(), obj_size);
+        add_turbulence_param(img_w, vs.get_aperature(), vs.fg_ranges[dm], Cn2, obj_size);
     }
 
     //N = (uint32_t)(img_h * img_w * 0.001);
@@ -294,24 +310,53 @@ void generate_vs_scene(
         //    break;
         }
 
-        // this is where we should apply the turbulence to random_img
-        apply_rgb_turbulence(idx, img_w, img_h, f1_layer.ptr<double>(0), f1_layer.ptr<double>(0));
-        apply_rgb_turbulence(idx, img_w, img_h, f2_layer.ptr<double>(0), f2_layer.ptr<double>(0));
-
+        //// this is where we should apply the turbulence to random_img
+        //apply_rgb_turbulence(idx, img_w, img_h, random_img.ptr<double>(0), random_img.ptr<double>(0));
+        //apply_rgb_turbulence(idx, img_w, img_h, random_img.ptr<double>(0), random_img.ptr<double>(0));
+        
         // generate random overlay
         generate_random_overlay(random_img, vs.rng, output_img, mask, N, shape_scale);
 
-        overlay_image(f1_layer, output_img, mask);
-        overlay_image(f2_layer, output_img, mask);
+        // get the psf for the fp1 image
+        get_rgb_psf(idx, &psf_w, &psf_h, psf_t.data());
+        psf = cv::Mat(psf_h, psf_w, CV_64FC3, psf_t.data());
+
+        turb_seed = time(NULL);
+        set_rng_seed(turb_seed);
+        apply_tilt(idx, img_w, img_h, output_img.ptr<double>(0), f1_out_layer.ptr<double>(0));
+        set_rng_seed(turb_seed);
+        apply_tilt(idx, img_w, img_h, mask.ptr<double>(0), f1_mask_layer.ptr<double>(0));
+
+        cv::filter2D(f1_out_layer, f1_out_layer, -1, psf, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
+        //cv::filter2D(f1_mask_layer, f1_mask_layer, -1, psf, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
+        //cv::threshold(f1_mask_layer, f1_mask_layer, 0.3, 1.0, cv::THRESH_BINARY);
+
+        // get the psf for the fp2 image
+        get_rgb_psf(idx, &psf_w, &psf_h, psf_t.data());
+        psf = cv::Mat(psf_h, psf_w, CV_64FC3, psf_t.data());
+
+        turb_seed = time(NULL);
+        set_rng_seed(turb_seed);
+        apply_tilt(idx, img_w, img_h, output_img.ptr<double>(0), f2_out_layer.ptr<double>(0));
+        set_rng_seed(turb_seed);
+        apply_tilt(idx, img_w, img_h, mask.ptr<double>(0), f2_mask_layer.ptr<double>(0));
+
+        cv::filter2D(f2_out_layer, f2_out_layer, -1, psf, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
+        //cv::filter2D(mask, f2_mask_layer, -1, psf, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
+        //cv::threshold(f2_mask_layer, f2_mask_layer, 0.3, 1.0, cv::THRESH_BINARY);
+
+        // add the overlays
+        overlay_image(f1_layer, f1_out_layer, f1_mask_layer);
+        overlay_image(f2_layer, f2_out_layer, f2_mask_layer);
 
         // overlay depthmap
         overlay_depthmap(dm, mask, dm_vals[idx]);
 
         // blur f1
-        blur_layer(f1_layer, img_f1, mask, vs.blur_kernels[tmp_br1_table[idx]], vs.rng);
+        blur_layer(f1_layer, img_f1, f1_mask_layer, vs.blur_kernels[tmp_br1_table[idx]], vs.rng);
 
         // blur f2
-        blur_layer(f2_layer, img_f2, mask, vs.blur_kernels[tmp_br2_table[idx]], vs.rng);
+        blur_layer(f2_layer, img_f2, f2_mask_layer, vs.blur_kernels[tmp_br2_table[idx]], vs.rng);
     }
 
     // blur the final images a little - sigma = 1.8975

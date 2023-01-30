@@ -37,6 +37,7 @@ typedef void* HINSTANCE;
 //#include <vs_gen_lib.h>
 
 typedef void (*lib_init_vs_gen_from_file)(const char* fn);
+typedef void (*lib_set_vs_seed)(int seed);
 typedef void (*lib_generate_vs_scene)(unsigned int img_w, unsigned int img_h, unsigned char* img_f1_t, unsigned char* img_f2_t, unsigned char* dm_t);
 
 #else
@@ -89,6 +90,8 @@ int main(int argc, char** argv)
     cv::Mat dm_img;
     cv::Mat montage;
 
+    uint64_t vs_seed;
+
     std::string window_name = "image";
 
     std::string lib_filename;
@@ -134,6 +137,7 @@ int main(int argc, char** argv)
         }
 
         lib_init_vs_gen_from_file init_vs_gen_from_file = (lib_init_vs_gen_from_file)GetProcAddress(vs_gen_lib, "init_vs_gen_from_file");
+        lib_set_vs_seed set_vs_seed = (lib_set_vs_seed)GetProcAddress(vs_gen_lib, "set_vs_seed");
         lib_generate_vs_scene generate_vs_scene = (lib_generate_vs_scene)GetProcAddress(vs_gen_lib, "generate_vs_scene");
 
     #else
@@ -150,16 +154,17 @@ int main(int argc, char** argv)
 
 
         lib_init_vs_gen_from_file init_vs_gen_from_file = (lib_init_vs_gen_from_file)dlsym(vs_gen_lib, "init_vs_gen_from_file");
+        lib_set_vs_seed set_vs_seed = (lib_set_vs_seed)dlsym(vs_gen_lib, "set_vs_seed");
         lib_generate_vs_scene generate_vs_scene = (lib_generate_vs_scene)dlsym(vs_gen_lib, "generate_vs_scene");
 
     #endif
 
 #endif
-        std::string input_filename = "../../blur_params_v23a.yml";
+        std::string input_filename = "../../blur_params_test.yml";
         img_w = 512;
         img_h = 512;
 
-        num_images = 1;
+        num_images = 20;
 
 #if defined(USE_LIB)
         init_vs_gen_from_file(input_filename.c_str());
@@ -180,9 +185,13 @@ int main(int argc, char** argv)
         char key = 0;
         //cv::resizeWindow(window_name, 4*N, 2*N);
 
+        vs_seed = time(NULL);
+
         //while(key != 'q')
         for(idx = 0; idx < num_images; ++idx)
         {
+
+            set_vs_seed(vs_seed);
             start_time = std::chrono::system_clock::now();
 
 #if defined(USE_LIB)
@@ -204,11 +213,11 @@ int main(int argc, char** argv)
             elapsed_time = std::chrono::duration_cast<d_sec>(stop_time - start_time);
             
 
-            cv::hconcat(img_f1, img_f2, montage);
+            //cv::hconcat(img_f1, img_f2, montage);
             //cv::hconcat(montage, dm_img, montage);
-            cv::imshow(window_name, montage);
-            cv::imshow("Depth Map", dm_img*10);
-            key = cv::waitKey(0);
+            //cv::imshow(window_name, montage);
+            //cv::imshow("Depth Map", dm_img*10);
+            //key = cv::waitKey(0);
 
             image_num = num2str(idx, "%04d");
             std::cout << image_num + " time (s): " << elapsed_time.count() << std::endl;
@@ -217,9 +226,9 @@ int main(int argc, char** argv)
             fp2_image = "images/test_image_fp2_" + image_num + ".png";
             dm_image = "depth_maps/test_image_dm_" + image_num + ".png";
 
-            //cv::imwrite("../results/" + fp1_image, img_f1, compression_params);
-            //cv::imwrite("../results/" + fp2_image, img_f2, compression_params);
-            //cv::imwrite("../results/" + dm_image, dm_img, compression_params);
+            cv::imwrite("../results/" + fp1_image, img_f1, compression_params);
+            cv::imwrite("../results/" + fp2_image, img_f2, compression_params);
+            cv::imwrite("../results/" + dm_image, dm_img, compression_params);
 
             data_log_stream << fp1_image + ", " + fp2_image + ", " + dm_image << std::endl;
         }
