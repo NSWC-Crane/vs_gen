@@ -160,7 +160,7 @@ int main(int argc, char** argv)
     #endif
 
 #endif
-        std::string input_filename = "../../blur_params_test.yml";
+        std::string input_filename = "../../blur_params_v23a.yml";
         img_w = 512;
         img_h = 512;
 
@@ -212,15 +212,14 @@ int main(int argc, char** argv)
             stop_time = std::chrono::system_clock::now();
             elapsed_time = std::chrono::duration_cast<d_sec>(stop_time - start_time);
             
-
+            image_num = num2str(idx, "%04d");
+            std::cout << image_num + " time (s): " << elapsed_time.count() << std::endl;           
+            
             //cv::hconcat(img_f1, img_f2, montage);
             //cv::hconcat(montage, dm_img, montage);
             //cv::imshow(window_name, montage);
             //cv::imshow("Depth Map", dm_img*10);
             //key = cv::waitKey(0);
-
-            image_num = num2str(idx, "%04d");
-            std::cout << image_num + " time (s): " << elapsed_time.count() << std::endl;
 
             fp1_image = "images/test_image_fp1_" + image_num + ".png";
             fp2_image = "images/test_image_fp2_" + image_num + ".png";

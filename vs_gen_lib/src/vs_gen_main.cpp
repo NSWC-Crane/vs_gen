@@ -328,8 +328,8 @@ void generate_vs_scene(
         apply_tilt(idx, img_w, img_h, mask.ptr<double>(0), f1_mask_layer.ptr<double>(0));
 
         cv::filter2D(f1_out_layer, f1_out_layer, -1, psf, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
-        //cv::filter2D(f1_mask_layer, f1_mask_layer, -1, psf, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
-        //cv::threshold(f1_mask_layer, f1_mask_layer, 0.3, 1.0, cv::THRESH_BINARY);
+        cv::filter2D(f1_mask_layer, f1_mask_layer, -1, psf, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
+        cv::threshold(f1_mask_layer, f1_mask_layer, 0.5, 1.0, cv::THRESH_BINARY);
 
         // get the psf for the fp2 image
         get_rgb_psf(idx, &psf_w, &psf_h, psf_t.data());
@@ -342,8 +342,8 @@ void generate_vs_scene(
         apply_tilt(idx, img_w, img_h, mask.ptr<double>(0), f2_mask_layer.ptr<double>(0));
 
         cv::filter2D(f2_out_layer, f2_out_layer, -1, psf, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
-        //cv::filter2D(mask, f2_mask_layer, -1, psf, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
-        //cv::threshold(f2_mask_layer, f2_mask_layer, 0.3, 1.0, cv::THRESH_BINARY);
+        cv::filter2D(mask, f2_mask_layer, -1, psf, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
+        cv::threshold(f2_mask_layer, f2_mask_layer, 0.5, 1.0, cv::THRESH_BINARY);
 
         // add the overlays
         overlay_image(f1_layer, f1_out_layer, f1_mask_layer);
