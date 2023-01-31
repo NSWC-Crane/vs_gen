@@ -150,6 +150,7 @@ void generate_vs_scene(
     cv::Mat psf;
     char use_color = 1;
     size_t turb_seed;
+    double mask_max = 0;
 
     //double mask_scale = 1.339286e-4 * std::max(img_w, img_h) + 0.061429;
     //double shape_scale = -0.000000203451 * std::max(img_w, img_h) * std::max(img_w, img_h) + 0.000429687500 * std::max(img_w, img_h) + 0.043333333333;
@@ -329,7 +330,10 @@ void generate_vs_scene(
 
         cv::filter2D(f1_out_layer, f1_out_layer, -1, psf, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
         cv::filter2D(f1_mask_layer, f1_mask_layer, -1, psf, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
-        cv::threshold(f1_mask_layer, f1_mask_layer, 0.5, 1.0, cv::THRESH_BINARY);
+        //cv::threshold(f1_mask_layer, f1_mask_layer, 0.5, 1.0, cv::THRESH_BINARY);
+        cv::minMaxIdx(f1_mask_layer, NULL, &mask_max, NULL, NULL);
+        f1_mask_layer *= 1.0 / mask_max;
+
 
         // get the psf for the fp2 image
         get_rgb_psf(idx, &psf_w, &psf_h, psf_t.data());
@@ -343,7 +347,9 @@ void generate_vs_scene(
 
         cv::filter2D(f2_out_layer, f2_out_layer, -1, psf, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
         cv::filter2D(mask, f2_mask_layer, -1, psf, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
-        cv::threshold(f2_mask_layer, f2_mask_layer, 0.5, 1.0, cv::THRESH_BINARY);
+        //cv::threshold(f2_mask_layer, f2_mask_layer, 0.5, 1.0, cv::THRESH_BINARY);
+        cv::minMaxIdx(f2_mask_layer, NULL, &mask_max, NULL, NULL);
+        f2_mask_layer *= 1.0 / mask_max;
 
         // add the overlays
         overlay_image(f1_layer, f1_out_layer, f1_mask_layer);
