@@ -318,26 +318,17 @@ void generate_vs_scene(
         // generate random overlay
         generate_random_overlay(random_img, vs.rng, output_img, mask, N, shape_scale);
 
-        // get the psf for the fp1 image
-        get_rgb_psf(idx, &psf_w, &psf_h, psf_t.data());
-        psf = cv::Mat(psf_h, psf_w, CV_64FC3, psf_t.data());
-
         turb_seed = time(NULL);
         set_rng_seed(turb_seed);
         apply_tilt(idx, img_w, img_h, output_img.ptr<double>(0), f1_out_layer.ptr<double>(0));
         set_rng_seed(turb_seed);
         apply_tilt(idx, img_w, img_h, mask.ptr<double>(0), f1_mask_layer.ptr<double>(0));
 
-        cv::filter2D(f1_out_layer, f1_out_layer, -1, psf, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
-        cv::filter2D(f1_mask_layer, f1_mask_layer, -1, psf, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
+        //cv::filter2D(f1_out_layer, f1_out_layer, -1, psf, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
+        //cv::filter2D(f1_mask_layer, f1_mask_layer, -1, psf, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
         //cv::threshold(f1_mask_layer, f1_mask_layer, 0.5, 1.0, cv::THRESH_BINARY);
-        cv::minMaxIdx(f1_mask_layer, NULL, &mask_max, NULL, NULL);
-        f1_mask_layer *= 1.0 / mask_max;
-
-
-        // get the psf for the fp2 image
-        get_rgb_psf(idx, &psf_w, &psf_h, psf_t.data());
-        psf = cv::Mat(psf_h, psf_w, CV_64FC3, psf_t.data());
+        //cv::minMaxIdx(f1_mask_layer, NULL, &mask_max, NULL, NULL);
+        //f1_mask_layer *= 1.0 / mask_max;
 
         turb_seed = time(NULL);
         set_rng_seed(turb_seed);
@@ -345,11 +336,11 @@ void generate_vs_scene(
         set_rng_seed(turb_seed);
         apply_tilt(idx, img_w, img_h, mask.ptr<double>(0), f2_mask_layer.ptr<double>(0));
 
-        cv::filter2D(f2_out_layer, f2_out_layer, -1, psf, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
-        cv::filter2D(mask, f2_mask_layer, -1, psf, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
-        //cv::threshold(f2_mask_layer, f2_mask_layer, 0.5, 1.0, cv::THRESH_BINARY);
-        cv::minMaxIdx(f2_mask_layer, NULL, &mask_max, NULL, NULL);
-        f2_mask_layer *= 1.0 / mask_max;
+        //cv::filter2D(f2_out_layer, f2_out_layer, -1, psf, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
+        //cv::filter2D(mask, f2_mask_layer, -1, psf, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
+        ////cv::threshold(f2_mask_layer, f2_mask_layer, 0.5, 1.0, cv::THRESH_BINARY);
+        //cv::minMaxIdx(f2_mask_layer, NULL, &mask_max, NULL, NULL);
+        //f2_mask_layer *= 1.0 / mask_max;
 
         // add the overlays
         overlay_image(f1_layer, f1_out_layer, f1_mask_layer);
@@ -358,11 +349,19 @@ void generate_vs_scene(
         // overlay depthmap
         overlay_depthmap(dm, mask, dm_vals[idx]);
 
+        // get the psf for the fp1 image
+        get_rgb_psf(idx, &psf_w, &psf_h, psf_t.data());
+        psf = cv::Mat(psf_h, psf_w, CV_64FC3, psf_t.data());
+
         // blur f1
-        blur_layer(f1_layer, img_f1, f1_mask_layer, vs.blur_kernels[tmp_br1_table[idx]], vs.rng);
+        blur_layer(f1_layer, img_f1, f1_mask_layer, vs.blur_kernels[tmp_br1_table[idx]], vs.rng, psf);
+
+        // get the psf for the fp2 image
+        get_rgb_psf(idx, &psf_w, &psf_h, psf_t.data());
+        psf = cv::Mat(psf_h, psf_w, CV_64FC3, psf_t.data());
 
         // blur f2
-        blur_layer(f2_layer, img_f2, f2_mask_layer, vs.blur_kernels[tmp_br2_table[idx]], vs.rng);
+        blur_layer(f2_layer, img_f2, f2_mask_layer, vs.blur_kernels[tmp_br2_table[idx]], vs.rng, psf);
     }
 
     // blur the final images a little - sigma = 1.8975

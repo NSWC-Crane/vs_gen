@@ -12,24 +12,56 @@
 
 #include <cv_random_image_gen.h>
 
+//-----------------------------------------------------------------------------
+inline cv::Mat duplicate_64FC_channels(cv::Mat& src)
+{
+    cv::Mat dst = cv::Mat::zeros(src.rows, src.cols, CV_64FC3);
 
+    cv::MatIterator_<double> itr = src.begin<double>();
+    cv::MatIterator_<double> end = src.end<double>();
+
+    cv::MatIterator_<cv::Vec3d> dst_itr = dst.begin<cv::Vec3d>();
+
+    for (; itr != end; ++itr, ++dst_itr)
+    {
+        (*dst_itr)[0] = (*dst_itr)[1] = (*dst_itr)[2] = (*itr);
+    }
+
+    return dst;
+}
 
 //-----------------------------------------------------------------------------
 inline void blur_layer(cv::Mat& input_img,
     cv::Mat &output_img,
     cv::Mat mask,
     cv::Mat &kernel,
-    cv::RNG &rng
+    cv::RNG &rng,
+    cv::Mat psf = cv::Mat()
 )
 {
     cv::Mat L1_1, L1_2;
+    double psf_sum;
+
     //input_img.convertTo(input_img, CV_32FC3);
     //output_img.convertTo(output_img, CV_32FC3);
     //mask.convertTo(mask, CV_32FC3);
+    if (psf.empty())
+    {
+        // blur the src_clone image with the overlay and blur the mask image
+        cv::filter2D(input_img, L1_1, -1, kernel, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
+        cv::filter2D(mask, mask, -1, kernel, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
+    }
+    else
+    {
+        cv::Mat k2 = duplicate_64FC_channels(kernel);
+        cv::filter2D(k2, psf, -1, psf, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
+        psf_sum = cv::sum(psf)[0];
+        psf *= 1.0 / psf_sum;
 
-    // blur the src_clone image with the overlay and blur the mask image
-    cv::filter2D(input_img, L1_1, -1, kernel, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
-    cv::filter2D(mask, mask, -1, kernel, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
+        // blur the src_clone image with the overlay and blur the mask image
+        cv::filter2D(input_img, L1_1, -1, psf, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
+        cv::filter2D(mask, mask, -1, psf, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
+    }
 
     // multiply the src image times (cv::Scalar(1.0, 1.0, 1.0) - mask)
     cv::multiply(L1_1, mask, L1_1);
