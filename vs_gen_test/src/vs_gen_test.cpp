@@ -74,8 +74,8 @@ int main(int argc, char** argv)
     int bp = 0;
 
     uint32_t idx = 0, jdx = 0;
-    uint32_t img_h = 512;
-    uint32_t img_w = 512;
+    uint32_t img_h = 256;
+    uint32_t img_w = 256;
     cv::Size img_size(img_h, img_w);
 
     cv::RNG rng(time(NULL));
@@ -96,16 +96,17 @@ int main(int argc, char** argv)
 
     std::string lib_filename;
 
-    std::string image_num;
+    std::string image_tb_num, image_num;
     std::string fp1_image, fp2_image, dm_image;
-    uint32_t num_images;
+    uint32_t num_tb_images = 20;
+    uint32_t num_images = 450;
 
     std::ofstream data_log_stream;
     std::string log_filename = "../results/tb23a_input.txt";
 
 
     // setup the windows to display the results
-    cv::namedWindow(window_name, cv::WINDOW_NORMAL);
+    //cv::namedWindow(window_name, cv::WINDOW_NORMAL);
     //cv::resizeWindow(window_name, 2*img_w, img_h);
 
     std::vector<int32_t> compression_params;
@@ -161,10 +162,6 @@ int main(int argc, char** argv)
 
 #endif
         std::string input_filename = "../../blur_params_v23a.yml";
-        img_w = 512;
-        img_h = 512;
-
-        num_images = 20;
 
 #if defined(USE_LIB)
         init_vs_gen_from_file(input_filename.c_str());
@@ -185,54 +182,64 @@ int main(int argc, char** argv)
         char key = 0;
         //cv::resizeWindow(window_name, 4*N, 2*N);
 
-        vs_seed = time(NULL);
 
-        //while(key != 'q')
-        for(idx = 0; idx < num_images; ++idx)
+        for (jdx = 0; jdx <= num_images; ++jdx)
         {
+            vs_seed = time(NULL);
 
-            set_vs_seed(vs_seed);
-            start_time = std::chrono::system_clock::now();
+            image_num = num2str(jdx, "%04d");
+
+            std::cout << "image #" << image_num << "..." << std::endl;
+
+            //while(key != 'q')
+            for (idx = 0; idx < num_tb_images; ++idx)
+            {
+
+                set_vs_seed(vs_seed);
+                start_time = std::chrono::system_clock::now();
 
 #if defined(USE_LIB)
 
-            // apply_turbulence(N, N, img.ptr<double>(0), img_blur.ptr<double>(0));
-            generate_vs_scene(img_w, img_h, img_f1.ptr<uint8_t>(0), img_f2.ptr<uint8_t>(0), dm_img.ptr<uint8_t>(0));
+                // apply_turbulence(N, N, img.ptr<double>(0), img_blur.ptr<double>(0));
+                generate_vs_scene(img_w, img_h, img_f1.ptr<uint8_t>(0), img_f2.ptr<uint8_t>(0), dm_img.ptr<uint8_t>(0));
 
 #else
-            //generate_tilt_image(img, Pv[0], rng, img_tilt);
-            //generate_blur_image(img_tilt, Pv[0], rng, img_blur);
+                //generate_tilt_image(img, Pv[0], rng, img_tilt);
+                //generate_blur_image(img_tilt, Pv[0], rng, img_blur);
 
-            //generate_tilt_image(img, Pv[22], rng, img_tilt);
-            //generate_blur_image(img_tilt, Pv[22], rng, img_blur2);
+                //generate_tilt_image(img, Pv[22], rng, img_tilt);
+                //generate_blur_image(img_tilt, Pv[22], rng, img_blur2);
 #endif
 
             //img_blur.convertTo(img_blur, CV_8UC1);
 
-            stop_time = std::chrono::system_clock::now();
-            elapsed_time = std::chrono::duration_cast<d_sec>(stop_time - start_time);
-            
-            image_num = num2str(idx, "%04d");
-            std::cout << image_num + " time (s): " << elapsed_time.count() << std::endl;           
-            
-            //cv::hconcat(img_f1, img_f2, montage);
-            //cv::hconcat(montage, dm_img, montage);
-            //cv::imshow(window_name, montage);
-            //cv::imshow("Depth Map", dm_img*10);
-            //key = cv::waitKey(0);
+                stop_time = std::chrono::system_clock::now();
+                elapsed_time = std::chrono::duration_cast<d_sec>(stop_time - start_time);
 
-            fp1_image = "images/test_image_fp1_" + image_num + ".png";
-            fp2_image = "images/test_image_fp2_" + image_num + ".png";
-            dm_image = "depth_maps/test_image_dm_" + image_num + ".png";
+                image_tb_num = num2str(idx, "%02d");
+                std::cout << "tb #" << image_tb_num + " time (s): " << elapsed_time.count() << std::endl;
 
-            cv::imwrite("../results/" + fp1_image, img_f1, compression_params);
-            cv::imwrite("../results/" + fp2_image, img_f2, compression_params);
+                //cv::hconcat(img_f1, img_f2, montage);
+                //cv::hconcat(montage, dm_img, montage);
+                //cv::imshow(window_name, montage);
+                //cv::imshow("Depth Map", dm_img*10);
+                //key = cv::waitKey(0);
+
+                fp1_image = "images/test_image_fp1_i" + image_num + "_tb" + image_tb_num + ".png";
+                fp2_image = "images/test_image_fp2_i" + image_num + "_tb" + image_tb_num + ".png";
+                dm_image = "depth_maps/test_image_dm_i" + image_num + ".png";
+
+                cv::imwrite("../results/" + fp1_image, img_f1, compression_params);
+                cv::imwrite("../results/" + fp2_image, img_f2, compression_params);
+
+                data_log_stream << fp1_image + ", " + fp2_image + ", " + dm_image << std::endl;
+            }   // end idx
+
             cv::imwrite("../results/" + dm_image, dm_img, compression_params);
-
-            data_log_stream << fp1_image + ", " + fp2_image + ", " + dm_image << std::endl;
-        }
-        bp = 2;
         
+        }   // end jdx
+
+
     }
     catch(std::exception& e)
     {
