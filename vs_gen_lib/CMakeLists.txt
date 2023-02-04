@@ -100,11 +100,11 @@ set(project_libs ${project_libs}
 
 # ----------------------------------------------------------------------------
 # find GNU Scientific Library
-include("${TURB_ROOT}/common/cmake_utils/find_GSL.cmake")
-if(GSL_FOUND)
-    set(project_includes ${project_includes} ${GSL_INCLUDE_DIRS})
-    set(project_libs ${project_libs} ${GSL_LIBRARIES})
-endif() 
+# include("${TURB_ROOT}/common/cmake_utils/find_GSL.cmake")
+# if(GSL_FOUND)
+    # set(project_includes ${project_includes} ${GSL_INCLUDE_DIRS})
+    # set(project_libs ${project_libs} ${GSL_LIBRARIES})
+# endif() 
 
 # ----------------------------------------------------------------------------
 # find OpenCV
