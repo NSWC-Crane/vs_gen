@@ -27,8 +27,8 @@
 #include <file_parser.h>
 
 #include <lens_pixel_size.h>
-#include <turbulence_param.h>
-#include <turbulence_sim.h>
+//#include <turbulence_param.h>
+//#include <turbulence_sim.h>
 
 //-----------------------------------------------------------------------------
 bool compare(std::pair<uint8_t, uint8_t> p1, std::pair<uint8_t, uint8_t> p2)
