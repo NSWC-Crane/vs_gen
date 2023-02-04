@@ -74,7 +74,7 @@ else()
         set(RYML_ROOT "${HOME}/Projects/rapidyaml")
     endif()
 
-    set(TURB_LIB "${TURB_ROOT}/turb_sim_lib/build/turb_sim.so")
+    set(TURB_LIB "${TURB_ROOT}/turb_sim_lib/build/libturb_sim.so")
     set(RYML_LIB "${RYML_ROOT}/build/libryml.so")
 
 endif()
