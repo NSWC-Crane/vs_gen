@@ -183,7 +183,7 @@ int main(int argc, char** argv)
         //cv::resizeWindow(window_name, 4*N, 2*N);
 
 
-        for (jdx = 0; jdx <= num_images; ++jdx)
+        for (jdx = 0; jdx < num_images; ++jdx)
         {
             vs_seed = time(NULL);
 
