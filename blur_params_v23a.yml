@@ -48,8 +48,8 @@ turbulence_parameters:
     #    max: 800
     #    step: 10
     Cn2:
-        min: 1e-14
-        max: 5e-14
+        min: 1e-15
+        max: 5e-15
 
 # dataset type: 0 -> random image, 1 -> other, 2-> knife edge
 #1

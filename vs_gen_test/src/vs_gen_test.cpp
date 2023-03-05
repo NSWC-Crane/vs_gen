@@ -30,6 +30,7 @@ typedef void* HINSTANCE;
 
 // custom includes
 #include <num2string.h>
+#include <file_ops.h>
 
 #define USE_LIB
 
@@ -102,7 +103,13 @@ int main(int argc, char** argv)
     uint32_t num_images = 450;
 
     std::ofstream data_log_stream;
-    std::string log_filename = "../results/tb23a_input.txt";
+    std::string save_location = "../results/low_trub/";
+    std::string log_filename = save_location + "tb23a_input_lt.txt";
+
+    // make the directories if they don't already exist
+    mkdir(save_location);
+    mkdir(save_location + "images");
+    mkdir(save_location + "depth_maps");
 
 
     // setup the windows to display the results
@@ -229,13 +236,13 @@ int main(int argc, char** argv)
                 fp2_image = "images/test_image_fp2_i" + image_num + "_tb" + image_tb_num + ".png";
                 dm_image = "depth_maps/test_image_dm_i" + image_num + ".png";
 
-                cv::imwrite("../results/" + fp1_image, img_f1, compression_params);
-                cv::imwrite("../results/" + fp2_image, img_f2, compression_params);
+                cv::imwrite(save_location + fp1_image, img_f1, compression_params);
+                cv::imwrite(save_location + fp2_image, img_f2, compression_params);
 
                 data_log_stream << fp1_image + ", " + fp2_image + ", " + dm_image << std::endl;
             }   // end idx
 
-            cv::imwrite("../results/" + dm_image, dm_img, compression_params);
+            cv::imwrite(save_location + dm_image, dm_img, compression_params);
         
         }   // end jdx
 
