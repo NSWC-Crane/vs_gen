@@ -132,7 +132,7 @@ int main(int argc, char** argv)
 #if defined(_DEBUG)
         lib_filename = "../../vs_gen_lib/build/Debug/vs_gen.dll";
 #else
-        lib_filename = "../../../vs_gen_lib/build/Release/vs_gen.dll";
+        lib_filename = "../../vs_gen_lib/build/Release/vs_gen.dll";
 #endif
 
         //HINSTANCE vs_gen_lib = LoadLibraryEx(lib_filename.c_str(), 0, DONT_RESOLVE_DLL_REFERENCES);
@@ -192,7 +192,7 @@ int main(int argc, char** argv)
 
         for (jdx = 0; jdx < num_images; ++jdx)
         {
-            vs_seed = time(NULL);
+            vs_seed = 1234567;// time(NULL);
 
             image_num = num2str(jdx, "%04d");
 

@@ -261,8 +261,8 @@ void generate_vs_scene(
     img_f2 = img_f1.clone();
 
     // apply the first turbulence here to img_f1 & img_f2
-    apply_rgb_turbulence(0, img_w, img_h, img_f1.ptr<double>(0), img_f1.ptr<double>(0));
-    apply_rgb_turbulence(0, img_w, img_h, img_f2.ptr<double>(0), img_f2.ptr<double>(0));
+    //apply_rgb_turbulence(0, img_w, img_h, img_f1.ptr<double>(0), img_f1.ptr<double>(0));
+    //apply_rgb_turbulence(0, img_w, img_h, img_f2.ptr<double>(0), img_f2.ptr<double>(0));
 
     //cv::Mat img_f1_t = img_f1.clone();
     //cv::Mat dst;
@@ -320,9 +320,9 @@ void generate_vs_scene(
 
         turb_seed = time(NULL);
         set_rng_seed(turb_seed);
-        apply_tilt(idx, img_w, img_h, output_img.ptr<double>(0), f1_out_layer.ptr<double>(0));
+        //apply_tilt(idx, img_w, img_h, output_img.ptr<double>(0), f1_out_layer.ptr<double>(0));
         set_rng_seed(turb_seed);
-        apply_tilt(idx, img_w, img_h, mask.ptr<double>(0), f1_mask_layer.ptr<double>(0));
+        //apply_tilt(idx, img_w, img_h, mask.ptr<double>(0), f1_mask_layer.ptr<double>(0));
 
         //cv::filter2D(f1_out_layer, f1_out_layer, -1, psf, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
         //cv::filter2D(f1_mask_layer, f1_mask_layer, -1, psf, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
@@ -332,9 +332,9 @@ void generate_vs_scene(
 
         turb_seed = time(NULL);
         set_rng_seed(turb_seed);
-        apply_tilt(idx, img_w, img_h, output_img.ptr<double>(0), f2_out_layer.ptr<double>(0));
+        //apply_tilt(idx, img_w, img_h, output_img.ptr<double>(0), f2_out_layer.ptr<double>(0));
         set_rng_seed(turb_seed);
-        apply_tilt(idx, img_w, img_h, mask.ptr<double>(0), f2_mask_layer.ptr<double>(0));
+        //apply_tilt(idx, img_w, img_h, mask.ptr<double>(0), f2_mask_layer.ptr<double>(0));
 
         //cv::filter2D(f2_out_layer, f2_out_layer, -1, psf, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
         //cv::filter2D(mask, f2_mask_layer, -1, psf, cv::Point(-1, -1), 0.0, cv::BorderTypes::BORDER_REPLICATE);
@@ -343,8 +343,10 @@ void generate_vs_scene(
         //f2_mask_layer *= 1.0 / mask_max;
 
         // add the overlays
-        overlay_image(f1_layer, f1_out_layer, f1_mask_layer);
-        overlay_image(f2_layer, f2_out_layer, f2_mask_layer);
+        overlay_image(f1_layer, output_img, mask);
+        overlay_image(f2_layer, output_img, mask); 
+        //overlay_image(f1_layer, f1_out_layer, f1_mask_layer);
+        //overlay_image(f2_layer, f2_out_layer, f2_mask_layer);
 
         // overlay depthmap
         overlay_depthmap(dm, mask, dm_vals[idx]);
@@ -354,14 +356,16 @@ void generate_vs_scene(
         psf = cv::Mat(psf_h, psf_w, CV_64FC3, psf_t.data());
 
         // blur f1
-        blur_layer(f1_layer, img_f1, f1_mask_layer, vs.blur_kernels[tmp_br1_table[idx]], vs.rng, psf);
+        blur_layer(f1_layer, img_f1, mask, vs.blur_kernels[tmp_br1_table[idx]], vs.rng);
+        //blur_layer(f1_layer, img_f1, f1_mask_layer, vs.blur_kernels[tmp_br1_table[idx]], vs.rng, psf);
 
         // get the psf for the fp2 image
         get_rgb_psf(idx, &psf_w, &psf_h, psf_t.data());
         psf = cv::Mat(psf_h, psf_w, CV_64FC3, psf_t.data());
 
         // blur f2
-        blur_layer(f2_layer, img_f2, f2_mask_layer, vs.blur_kernels[tmp_br2_table[idx]], vs.rng, psf);
+        blur_layer(f2_layer, img_f2, mask, vs.blur_kernels[tmp_br2_table[idx]], vs.rng);
+        //blur_layer(f2_layer, img_f2, f2_mask_layer, vs.blur_kernels[tmp_br2_table[idx]], vs.rng, psf);
     }
 
     // blur the final images a little - sigma = 1.8975
